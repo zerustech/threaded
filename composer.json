@@ -10,7 +10,9 @@
         }
     ],
     "require": {
-        "ext-pthreads": "^2.0.10"
+        "php": ">=5.4",
+        "ext-pthreads": "^2.0.10",
+        "zerustech/io": "dev-master"
     },
     "autoload": {
         "psr-4": {

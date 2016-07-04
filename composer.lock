@@ -1,0 +1,57 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "This file is @generated automatically"
+    ],
+    "hash": "f370a870169cb7c267f21af402b56c37",
+    "content-hash": "b909f93efab9195935a5f2c58aea748e",
+    "packages": [
+        {
+            "name": "zerustech/io",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/zerustech/io.git",
+                "reference": "7dbe4079882785fb1e46eddc19602afe06a224e1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/zerustech/io/zipball/7dbe4079882785fb1e46eddc19602afe06a224e1",
+                "reference": "7dbe4079882785fb1e46eddc19602afe06a224e1",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "ZerusTech\\Component\\IO\\": ".",
+                    "ZerusTech\\Component\\IO\\Tests\\": "./Tests"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Michael Lee",
+                    "email": "michael.lee@zerustech.com"
+                }
+            ],
+            "description": "ZerusTech IO Component",
+            "time": "2016-07-05 08:05:09"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {
+        "zerustech/io": 20
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {
+        "ext-pthreads": "^2.0.10"
+    },
+    "platform-dev": []
+}
