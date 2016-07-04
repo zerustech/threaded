@@ -1,0 +1,21 @@
+{
+    "name": "zerustech/threaded",
+    "description": "ZerusTech Threaded Component",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Michael Lee",
+            "email": "michael.lee@zerustech.com"
+        }
+    ],
+    "require": {
+        "ext-pthreads": "^2.0.10"
+    },
+    "autoload": {
+        "psr-4": {
+            "ZerusTech\\Component\\Threaded\\": ".",
+            "ZerusTech\\Component\\Threaded\\Tests\\": "./Tests"
+        }
+    }
+}
