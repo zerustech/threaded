@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "f370a870169cb7c267f21af402b56c37",
-    "content-hash": "b909f93efab9195935a5f2c58aea748e",
+    "hash": "f351c38f602bcd5be744400e3571ad88",
+    "content-hash": "f22fcc2ebbe8e6eb16fe7755b097c95c",
     "packages": [
         {
             "name": "zerustech/io",
@@ -13,13 +13,16 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/zerustech/io.git",
-                "reference": "7dbe4079882785fb1e46eddc19602afe06a224e1"
+                "reference": "b617a4ac21298e231469526b0b1259d8fee18f8d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zerustech/io/zipball/7dbe4079882785fb1e46eddc19602afe06a224e1",
-                "reference": "7dbe4079882785fb1e46eddc19602afe06a224e1",
+                "url": "https://api.github.com/repos/zerustech/io/zipball/b617a4ac21298e231469526b0b1259d8fee18f8d",
+                "reference": "b617a4ac21298e231469526b0b1259d8fee18f8d",
                 "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4"
             },
             "type": "library",
             "autoload": {
@@ -39,7 +42,7 @@
                 }
             ],
             "description": "ZerusTech IO Component",
-            "time": "2016-07-05 08:05:09"
+            "time": "2016-07-05 08:28:18"
         }
     ],
     "packages-dev": [],
@@ -51,6 +54,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
+        "php": ">=5.4",
         "ext-pthreads": "^2.0.10"
     },
     "platform-dev": []
