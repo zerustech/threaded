@@ -259,12 +259,6 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
         // When started, it will wait because the buffer is empty.
         $consumer->start();
 
-        // Wait for the thread to change its status to 'waiting'
-        sleep(1);
-
-        // Asserts the thread is waiting.
-        $this->assertTrue($input->isWaiting());
-
         // Adds contents to the buffer and notify the thread.
         $input->synchronized(function($self, $buffer){
 
@@ -276,7 +270,7 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
         // Waits till the thread has finished its job.
         $consumer->join();
 
-        // Asserts the thread is not waiting.
-        $this->assertFalse($input->isWaiting());
+        // Asserts the thread is not running.
+        $this->assertFalse($input->isRunning());
     }
 }

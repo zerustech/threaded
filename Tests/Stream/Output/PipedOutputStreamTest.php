@@ -308,12 +308,6 @@ class PipedOutputStreamTest extends \PHPUnit_Framework_TestCase
         // Starts the producer. Because buffer is full, the thread will wait.
         $producer->start();
 
-        // Waits for the thread to change its status to 'waiting'.
-        sleep(1);
-
-        // Asserts the thread is waiting.
-        $this->assertTrue($downstream->isWaiting());
-
         // Shifts one byte off the buffer and notify the thread.
         $downstream->synchronized(function($self, $buffer){
 
@@ -326,8 +320,8 @@ class PipedOutputStreamTest extends \PHPUnit_Framework_TestCase
         // Waits for the thread to finish its job.
         $producer->join();
 
-        // Now asserts the thread is not waiting.
-        $this->assertFalse($downstream->isWaiting());
+        // Now asserts the thread is not running.
+        $this->assertFalse($downstream->isRunning());
     }
 
     /**
