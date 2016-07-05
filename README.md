@@ -1,4 +1,4 @@
-[![Build Status](https://api.travis-ci.org/zerustech/threaded.svg?branch=2.0.x)](https://travis-ci.org/zerustech/threaded)
+[![Build Status](https://api.travis-ci.org/zerustech/threaded.svg?branch=v2.0.x)](https://travis-ci.org/zerustech/threaded)
 
 ZerusTech Threaded Component
 ================================================
