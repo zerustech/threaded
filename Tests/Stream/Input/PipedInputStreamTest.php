@@ -27,17 +27,15 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
 {
     public function testConstructor()
     {
-        $buffer = new \Threaded();
         $upstream = new PipedOutputStream();
-        $input = new PipedInputStream($buffer, $upstream);
+        $input = new PipedInputStream($upstream);
         $this->assertSame($upstream, $input->getUpstream());
         $this->assertFalse($input->isClosed());
     }
 
     public function testConstructorWithNullUpstream()
     {
-        $buffer = new \Threaded();
-        $input = new PipedInputStream($buffer);
+        $input = new PipedInputStream();
         $this->assertNull($input->getUpstream());
         $this->assertFalse($input->isClosed());
     }
@@ -47,10 +45,9 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testConnect()
     {
-        $buffer = new \Threaded();
         $upstream = new PipedOutputStream();
 
-        $input = new PipedInputStream($buffer);
+        $input = new PipedInputStream();
         $input->connect($upstream);
 
         $this->assertSame($upstream, $input->getUpstream());
@@ -66,10 +63,9 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testConnectOnConnectedStream()
     {
-        $buffer = new \Threaded();
         $upstream = new PipedOutputStream();
 
-        $input = new PipedInputStream($buffer);
+        $input = new PipedInputStream();
         $input->connect($upstream);
         $input->connect($upstream);
     }
@@ -84,17 +80,10 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
         $upstream = new PipedOutputStream();
 
         // Initializes an event dispatcher
-        $indexes = new \Threaded();
-        $keys = new \Threaded();
-        $allListeners = new \Threaded();
-        $dispatcher = new EventDispatcher($indexes, $keys, $allListeners);
+        $dispatcher = new EventDispatcher();
 
         // Initializes listener
-        $markers = new \Threaded();
-        $listenerObject = new MarkerListener($markers);
-        $listener = new \Threaded();
-        $listener[] = $listenerObject;
-        $listener[] = 'mark';
+        $listener = [new MarkerListener(), 'mark'];
 
         // Adds dispatcher and listener to the piped output stream
         $upstream
@@ -102,15 +91,14 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
             ->addListener($upstream::EVENT_CONNECT_BEFORE, $listener);
 
         // Initializes a piped input stream
-        $buffer = new \Threaded();
-        $input = new PipedInputStream($buffer);
+        $input = new PipedInputStream();
 
         // Connects the piped input stream to the piped output stream
         $input->connect($upstream);
 
         // Asserts the connect() method of the piped output stream has been
         // called.
-        $this->assertSame($listenerObject, $listenerObject->markers[0]);
+        $this->assertSame($listener[0], $listener[0]->markers[0]);
     }
 
     /**
@@ -123,17 +111,10 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
         $upstream = new PipedOutputStream();
 
         // Initializes an event dispatcher
-        $indexes = new \Threaded();
-        $keys = new \Threaded();
-        $allListeners = new \Threaded();
-        $dispatcher = new EventDispatcher($indexes, $keys, $allListeners);
+        $dispatcher = new EventDispatcher();
 
         // Initializes the listener
-        $markers = new \Threaded();
-        $listenerObject = new MarkerListener($markers);
-        $listener = new \Threaded();
-        $listener[] = $listenerObject;
-        $listener[] = 'mark';
+        $listener = [new MarkerListener(), 'mark'];
 
         // Adds dispatcher and listener to the piped output stream.
         $upstream
@@ -141,8 +122,7 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
             ->addListener($upstream::EVENT_CONNECT_BEFORE, $listener);
 
         // Initializes a piped input stream.
-        $buffer = new \Threaded();
-        $input = new PipedInputStream($buffer);
+        $input = new PipedInputStream();
 
         // Connects the piped input stream to the piped output stream.
         // But sets 'reverse' to false.
@@ -150,7 +130,7 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
 
         // Asserts the connect() method of the output stream has not been
         // called.
-        $this->assertNull($listenerObject->markers[0]);
+        $this->assertNull($listener[0]->markers[0]);
     }
 
     /**
@@ -159,10 +139,9 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testForceConnect()
     {
-        $buffer = new \Threaded();
         $upstream = new PipedOutputStream();
 
-        $input = new PipedInputStream($buffer);
+        $input = new PipedInputStream();
         $input->connect($upstream);
         $input->connect($upstream, true);
 
@@ -181,21 +160,13 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
         $upstream = new PipedOutputStream();
 
         // Initializes a piped input stream.
-        $buffer = new \Threaded();
-        $input = new PipedInputStream($buffer, $upstream);
+        $input = new PipedInputStream($upstream);
 
         // Initializes an event dispatcher.
-        $indexes = new \Threaded();
-        $keys = new \Threaded();
-        $allListeners = new \Threaded();
-        $dispatcher = new EventDispatcher($indexes, $keys, $allListeners);
+        $dispatcher = new EventDispatcher();
 
         // Initializes a listener.
-        $markers = new \Threaded();
-        $listenerObject = new MarkerListener($markers);
-        $listener = new \Threaded();
-        $listener[] = $listenerObject;
-        $listener[] = 'mark';
+        $listener = [new MarkerListener(), 'mark'];
 
         // Adds dispatcher and listener to the piped input stream.
         $input
@@ -209,7 +180,7 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($input->isClosed());
 
         // Asserts notify() of the piped input stream has been called.
-        $this->assertSame($listenerObject, $listenerObject->markers[0]);
+        $this->assertSame($listener[0], $listener[0]->markers[0]);
     }
 
     /**
@@ -220,8 +191,7 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testCloseOnClosedStream()
     {
-        $buffer = new \Threaded();
-        $input = new PipedInputStream($buffer);
+        $input = new PipedInputStream();
         $input->close();
         $input->close();
     }
@@ -231,13 +201,13 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testRead()
     {
-        $buffer = new \Threaded();
+        $input = new PipedInputStream();
+
+        $buffer = $input->getBuffer();
 
         $buffer[] = '*';
 
         $buffer[] = '*';
-
-        $input = new PipedInputStream($buffer);
 
         $data = $input->read(2);
 
@@ -250,8 +220,7 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
     public function testReadWhenBufferIsEmpty()
     {
         // Initializes a piped input stream.
-        $buffer = new \Threaded();
-        $input = new PipedInputStream($buffer);
+        $input = new PipedInputStream();
 
         // Initializes a consumer that reads 1 byte.
         $consumer = new Consumer($input, 1);
@@ -259,24 +228,19 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
         // When started, it will wait because the buffer is empty.
         $consumer->start();
 
-        // Wait for the thread to change its status to 'waiting'
-        sleep(1);
-
-        // Asserts the thread is waiting.
-        $this->assertTrue($input->isWaiting());
-
         // Adds contents to the buffer and notify the thread.
-        $input->synchronized(function($self, $buffer){
+        $input->synchronized(function(){
 
+            $buffer = $this->getBuffer();
             $buffer[] = '*';
-            $self->notify();
+            $this->notify();
 
-        }, $input, $buffer);
+        });
 
         // Waits till the thread has finished its job.
         $consumer->join();
 
         // Asserts the thread is not waiting.
-        $this->assertFalse($input->isWaiting());
+        $this->assertFalse($input->isRunning());
     }
 }

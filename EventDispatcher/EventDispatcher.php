@@ -47,27 +47,20 @@ class EventDispatcher extends \Threaded implements EventDispatcherInterface
 
     /**
      * Constructor.
-     *
-     * Due to the local variable issue in pthreads v2.x. The threaded instances
-     * must be passed from outside.
-     *
-     * @param \Threaded $indexes The threaded indexes instance..
-     * @param \Threaded $keys The threaded keys instance.
-     * @param \Threaded $listeners The threaded listeners instance.
      */
-    public function __construct(\Threaded $indexes, \Threaded $keys, \Threaded $listeners)
+    public function __construct()
     {
-        $this->indexes = $indexes;
+        $this->indexes = new \Volatile();
 
-        $this->keys = $keys;
+        $this->keys = new \Volatile();
 
-        $this->listeners = $listeners;
+        $this->listeners = new \Volatile();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function addListener($eventName, \Threaded $listener, $priority = 0)
+    public function addListener($eventName, array $listener, $priority = 0)
     {
         // The key of the index in the threaded indexes.
         $indexKey = $eventName.'/'.$priority;
@@ -99,7 +92,7 @@ class EventDispatcher extends \Threaded implements EventDispatcherInterface
     /**
      * {@inheritdoc}
      */
-    public function removeListener($eventName, \Threaded $listener)
+    public function removeListener($eventName, array $listener)
     {
         // If listener is not listening at the given event name, returns.
         if (!isset($this->keys[$eventName])) {
@@ -113,7 +106,7 @@ class EventDispatcher extends \Threaded implements EventDispatcherInterface
         foreach ($keys as $key) {
 
             // If finds a match in the threaded listeners
-            if ($listener === $this->listeners[$key]) {
+            if ($listener[0] === $this->listeners[$key][0] && $listener[1] === $this->listeners[$key][1]) {
 
                 // Unsets it from the threaded listeners.
                 unset($this->listeners[$key]);
@@ -200,7 +193,7 @@ class EventDispatcher extends \Threaded implements EventDispatcherInterface
      * @param string $eventName The event name.
      * @param \Threaded $listener The listener.
      */
-    public function getListenerPriority($eventName, \Threaded $listener)
+    public function getListenerPriority($eventName, array $listener)
     {
         // If no listener exists for the event name, returns.
         if (!isset($this->keys[$eventName])) {
@@ -216,7 +209,7 @@ class EventDispatcher extends \Threaded implements EventDispatcherInterface
         foreach ($keys as $key) {
 
             // If finds a match, parses its priority from the key.
-            if ($listener === $this->listeners[$key]) {
+            if ($listener[0] === $this->listeners[$key][0] && $listener[1] === $this->listeners[$key][1]) {
 
                 $meta = explode('/', $key);
 

@@ -39,10 +39,7 @@ class MarkerListenerTest extends \PHPUnit_Framework_TestCase
         $event = new Event();
 
         // Initializes an event dispatcher
-        $indexes = new \Threaded();
-        $keys = new \Threaded();
-        $listeners = new \Threaded();
-        $dispatcher = new EventDispatcher($indexes, $keys, $listeners);
+        $dispatcher = new EventDispatcher();
 
         // Calls mark() method.
         $listener->mark($event, 'event.1', $dispatcher);

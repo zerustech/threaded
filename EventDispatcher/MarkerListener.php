@@ -35,9 +35,9 @@ class MarkerListener extends \Threaded
      *
      * @param \Threaded $markers The listener container.
      */
-    public function __construct(\Threaded $markers)
+    public function __construct(\Threaded $markers = null)
     {
-        $this->markers = $markers;
+        $this->markers = (null !== $markers ? $markers : new \Threaded());
     }
 
     /**

@@ -37,7 +37,7 @@ interface EventDispatcherInterface
      * is, the higher the priority.
      * @return EventDispatcherInterface Current instance.
      */
-    public function addListener($eventName, \Threaded $listener, $priority = 0);
+    public function addListener($eventName, array $listener, $priority = 0);
 
     /**
      * Unbinds a listener for the given event name from the dispatcher.
@@ -45,7 +45,7 @@ interface EventDispatcherInterface
      * @param \Threaded $listener The listener to be removed.
      * @return EventDispatcherInterface Current instance.
      */
-    public function removeListener($eventName, \Threaded $listener);
+    public function removeListener($eventName, array $listener);
 
     /**
      * Gets all listeners for the given event name. If event name is omitted,

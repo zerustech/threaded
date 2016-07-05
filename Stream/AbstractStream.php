@@ -27,7 +27,7 @@ use ZerusTech\Component\Threaded\EventDispatcher\EventDispatcherContainerInterfa
  *
  * @author Michael Lee <michael.lee@zerustech.com>
  */
-abstract class AbstractStream extends \Threaded implements ClosableInterface, EventDispatcherContainerInterface
+abstract class AbstractStream extends \Volatile implements ClosableInterface, EventDispatcherContainerInterface
 {
     /**
      * @var resource The resource being held by current stream.
@@ -101,13 +101,15 @@ abstract class AbstractStream extends \Threaded implements ClosableInterface, Ev
      */
     public function dispatch($eventName, Event $event = null)
     {
+        $event = (null !== $event ? $event : new Event($this));
+
         return null !== $this->dispatcher ? $this->dispatcher->dispatch($eventName, $event) : null;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function addListener($eventName, \Threaded $listener, $priority = 0)
+    public function addListener($eventName, array $listener, $priority = 0)
     {
         if (null !== $this->dispatcher) {
 
@@ -120,7 +122,7 @@ abstract class AbstractStream extends \Threaded implements ClosableInterface, Ev
     /**
      * {@inheritdoc}
      */
-    public function removeListener($eventName, \Threaded $listener)
+    public function removeListener($eventName, array $listener)
     {
         if (null !== $this->dispatcher) {
 

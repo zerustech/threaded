@@ -52,13 +52,12 @@ class PipedInputStream extends AbstractStream implements InputStreamInterface, P
     /**
      * Constructor.
      *
-     * @param \Threaded $buffer The queue for buffering.
      * @param PipedOutputStreamInterface $upstream The piped output stream to
      * connect.
      */
-    public function __construct(\Threaded $buffer, PipedOutputStreamInterface $upstream = null)
+    public function __construct(PipedOutputStreamInterface $upstream = null)
     {
-        $this->buffer = $buffer;
+        $this->buffer = new \Threaded();
 
         $this->upstream = $upstream;
 
@@ -117,7 +116,7 @@ class PipedInputStream extends AbstractStream implements InputStreamInterface, P
     {
         return $this->synchronized(
 
-            function($self, $length){
+            function($length){
 
                 $remaining = $length;
 
@@ -125,9 +124,9 @@ class PipedInputStream extends AbstractStream implements InputStreamInterface, P
 
                 while ($remaining > 0) {
 
-                    while (0 === $self->buffer->count()) {
+                    while (0 === $this->buffer->count()) {
 
-                        if (null !== $self->upstream && $self->upstream->isClosed()) {
+                        if (null !== $this->upstream && $this->upstream->isClosed()) {
 
                             // printf("The upstream is closed, so the downstream should stop waiting ... \n");
 
@@ -136,26 +135,26 @@ class PipedInputStream extends AbstractStream implements InputStreamInterface, P
 
                         // printf("The buffer is empty, so the downstream should wait ... \n");
 
-                        $self->wait();
+                        $this->wait();
                         // Buffer is empty
                         // Waiting for upstream to produce more bytes.
                     }
 
-                    // printf("The buffer is not empty, reading [%s] from the downstream ... \n", $self->buffer[0]);
+                    // printf("The buffer is not empty, reading [%s] from the downstream ... \n", $this->buffer[0]);
 
-                    $data .= $self->buffer->shift();
+                    $data .= $this->buffer->shift();
 
                     // Notify upstream to continue producing bytes.
                     // printf("The buffer is not full, so wake up the upstream ...\n");
 
-                    $self->notify();
+                    $this->notify();
 
                     $remaining--;
                 }
 
                 return $data;
 
-        }, $this, $length);
+        }, $length);
     }
 
     /**
@@ -165,15 +164,15 @@ class PipedInputStream extends AbstractStream implements InputStreamInterface, P
     {
         return $this->synchronized(
 
-            function($self, $string){
+            function($string){
 
                 $data = str_split($string);
 
                 foreach ($data as $byte) {
 
-                    while ($self::BUFFER_SIZE === $self->buffer->count()) {
+                    while ($this::BUFFER_SIZE === $this->buffer->count()) {
 
-                        if ($self->isClosed()) {
+                        if ($this->isClosed()) {
 
                             // printf("The downstream is closed, so the upstream should stop waiting ... \n");
 
@@ -182,24 +181,24 @@ class PipedInputStream extends AbstractStream implements InputStreamInterface, P
 
                         // printf("The buffer is full, so the upstream should wait ... \n");
 
-                        $self->wait();
+                        $this->wait();
                         // Buffer is full.
                         // Waiting for downstream to consume more bytes.
                     }
 
                     // printf("The buffer is not full, writing [%s] ... \n", $byte);
 
-                    $self->buffer[] = $byte;
+                    $this->buffer[] = $byte;
 
                     // Notify downstream to continue consuming bytes.
                     // printf("The buffer is not empty, so wake up the downstream ...\n");
 
-                    $self->notify();
+                    $this->notify();
                 }
 
-                return $self;
+                return $this;
 
-        }, $this, $string);
+        }, $string);
     }
 
     /**

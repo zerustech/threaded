@@ -20,55 +20,20 @@ use ZerusTech\Component\Threaded\EventDispatcher\Event;
  */
 class EventDispatcherTest extends \PHPUnit_Framework_TestCase
 {
-    public function testConstructor()
-    {
-        $indexes = new \Threaded();
-        $keys = new \Threaded();
-        $allListeners = new \Threaded();
-
-        $dispatcher = new EventDispatcher($indexes, $keys, $allListeners);
-
-        $this->assertSame($indexes, $dispatcher->indexes);
-        $this->assertSame($keys, $dispatcher->keys);
-        $this->assertSame($allListeners, $dispatcher->listeners);
-    }
-
     /**
      * Test listeners related methods.
      */
     public function testListeners()
     {
         // Initializes dispatcher
-        $indexes = new \Threaded();
-        $keys = new \Threaded();
-        $allListeners = new \Threaded();
-        $dispatcher = new EventDispatcher($indexes, $keys, $allListeners);
+        $dispatcher = new EventDispatcher();
 
-        // Initializes three listeners
-        $listenerObject1 = new \Threaded();
-        $listenerObject2 = new \Threaded();
-        $listenerObject3 = new \Threaded();
-        $listenerObject4 = new \Threaded();
+        // Listeners
+        $listener1 = [new MarkerListener(), 'method1'];
+        $listener2 = [new MarkerListener(), 'method2'];
+        $listener3 = [new MarkerListener(), 'method3'];
+        $listener4 = [new MarkerListener(), 'method4'];
 
-        // Listener 1
-        $listener1 = new \Threaded();
-        $listener1[] = $listenerObject1;
-        $listener1[] = 'method1';
-
-        // Listener 2
-        $listener2 = new \Threaded();
-        $listener2[] = $listenerObject2;
-        $listener2[] = 'method2';
-
-        // Listener 3
-        $listener3 = new \Threaded();
-        $listener3[] = $listenerObject3;
-        $listener3[] = 'method3';
-
-        // Listener 4
-        $listener4 = new \Threaded();
-        $listener4[] = $listenerObject4;
-        $listener4[] = 'method4';
 
         // Tests addListener() and get Listeners()
         // ---------------------------------------
@@ -80,8 +45,8 @@ class EventDispatcherTest extends \PHPUnit_Framework_TestCase
         $listeners = $dispatcher->getListeners('event.1');
 
         // Asserts listeners are listed correctly.
-        $this->assertSame($listener1, $listeners[0]);
-        $this->assertSame($listener2, $listeners[1]);
+        $this->assertSame($listener1[0], $listeners[0][0]);
+        $this->assertSame($listener2[0], $listeners[1][0]);
 
         // Adds listeners for event.2, with priority 10 and 5
         // listener1 => 10
@@ -99,19 +64,19 @@ class EventDispatcherTest extends \PHPUnit_Framework_TestCase
         $listeners = $dispatcher->getListeners('event.2');
 
         // Asserts listeners are listed correctly.
-        $this->assertSame($listener1, $listeners[2]);
-        $this->assertSame($listener2, $listeners[0]);
-        $this->assertSame($listener3, $listeners[1]);
+        $this->assertSame($listener1[0], $listeners[2][0]);
+        $this->assertSame($listener2[0], $listeners[0][0]);
+        $this->assertSame($listener3[0], $listeners[1][0]);
 
         // Lists all listeners for all event names.
         $listeners = $dispatcher->getListeners();
 
         // Asserts listeners are listed correctly.
-        $this->assertSame($listener1, $listeners['event.1'][0]);
-        $this->assertSame($listener2, $listeners['event.1'][1]);
-        $this->assertSame($listener1, $listeners['event.2'][2]);
-        $this->assertSame($listener2, $listeners['event.2'][0]);
-        $this->assertSame($listener3, $listeners['event.2'][1]);
+        $this->assertSame($listener1[0], $listeners['event.1'][0][0]);
+        $this->assertSame($listener2[0], $listeners['event.1'][1][0]);
+        $this->assertSame($listener1[0], $listeners['event.2'][2][0]);
+        $this->assertSame($listener2[0], $listeners['event.2'][0][0]);
+        $this->assertSame($listener3[0], $listeners['event.2'][1][0]);
 
         // Tests hasListeners()
         // --------------------
@@ -132,7 +97,8 @@ class EventDispatcherTest extends \PHPUnit_Framework_TestCase
         // Asserts listener1 for event.1 is removed correctly.
         $dispatcher->removeListener('event.1', $listener1);
         $listeners = $dispatcher->getListeners('event.1');
-        $this->assertSame($listener2, $listeners[0]);
+
+        $this->assertSame($listener2[0], $listeners[0][0]);
 
         // Tries to remove all listeners of event.1, and when no listener is
         // left, the listeners returned by getListeners() will be an empty array.
@@ -149,14 +115,14 @@ class EventDispatcherTest extends \PHPUnit_Framework_TestCase
         // Asserts the left listeners are listed and ordered correctly.
         $dispatcher->removeListener('event.3', $listener2);
         $listeners = $dispatcher->getListeners('event.3');
-        $this->assertSame($listener1, $listeners[0]);
-        $this->assertSame($listener3, $listeners[1]);
+        $this->assertSame($listener1[0], $listeners[0][0]);
+        $this->assertSame($listener3[0], $listeners[1][0]);
 
         // Asserts the left listeners are listed and ordered correctly in all
         // listeners.
         $listeners = $dispatcher->getListeners();
-        $this->assertSame($listener1, $listeners['event.3'][0]);
-        $this->assertSame($listener3, $listeners['event.3'][1]);
+        $this->assertSame($listener1[0], $listeners['event.3'][0][0]);
+        $this->assertSame($listener3[0], $listeners['event.3'][1][0]);
 
         // Adds listeners for event.4 with different priorities.
         $dispatcher->addListener('event.4', $listener1, 5);
@@ -166,41 +132,31 @@ class EventDispatcherTest extends \PHPUnit_Framework_TestCase
 
         // Asserts the order of listeners for event.4
         $listeners = $dispatcher->getListeners('event.4');
-        $this->assertSame($listener1, $listeners[0]);
-        $this->assertSame($listener2, $listeners[3]);
-        $this->assertSame($listener3, $listeners[1]);
-        $this->assertSame($listener4, $listeners[2]);
+        $this->assertSame($listener1[0], $listeners[0][0]);
+        $this->assertSame($listener2[0], $listeners[3][0]);
+        $this->assertSame($listener3[0], $listeners[1][0]);
+        $this->assertSame($listener4[0], $listeners[2][0]);
 
         // Tries to remove listener3 and asserts the order of the remaining
         // listeners
         $dispatcher->removeListener('event.4', $listener3);
         $listeners = $dispatcher->getListeners('event.4');
-        $this->assertSame($listener1, $listeners[0]);
-        $this->assertSame($listener2, $listeners[2]);
-        $this->assertSame($listener4, $listeners[1]);
+        $this->assertSame($listener1[0], $listeners[0][0]);
+        $this->assertSame($listener2[0], $listeners[2][0]);
+        $this->assertSame($listener4[0], $listeners[1][0]);
     }
 
     public function testDispatch()
     {
         // Intializes a dispatcher
-        $indexes = new \Threaded();
-        $keys = new \Threaded();
-        $allListeners = new \Threaded();
-        $dispatcher = new EventDispatcher($indexes, $keys, $allListeners);
+        $dispatcher = new EventDispatcher();
 
         // Initializes two listener objects
         $markers = new \Threaded();
-        $listenerObject1 = new MarkerListener($markers);
-        $listenerObject2 = new MarkerListener($markers);
 
         // Initializes listeners
-        $listener1 = new \Threaded();
-        $listener1[] = $listenerObject1;
-        $listener1[] = 'mark';
-
-        $listener2 = new \Threaded();
-        $listener2[] = $listenerObject2;
-        $listener2[] = 'mark';
+        $listener1 = [new MarkerListener($markers), 'mark'];
+        $listener2 = [new MarkerListener($markers), 'mark'];
 
         // Binds listeners to 'event.1'
         $dispatcher->addListener('event.1', $listener1);
@@ -211,31 +167,21 @@ class EventDispatcherTest extends \PHPUnit_Framework_TestCase
 
         // Asserts that both listener objects have been marked by the marker
         // listener.
-        $this->assertSame($listenerObject1, $markers[0]);
-        $this->assertSame($listenerObject2, $markers[1]);
+        $this->assertSame($listener1[0], $markers[0]);
+        $this->assertSame($listener2[0], $markers[1]);
     }
 
     public function testPropagation()
     {
         // Initializes dispatcher
-        $indexes = new \Threaded();
-        $keys = new \Threaded();
-        $allListeners = new \Threaded();
-        $dispatcher = new EventDispatcher($indexes, $keys, $allListeners);
+        $dispatcher = new EventDispatcher();
 
         // Initializes two listener objects.
         $markers = new \Threaded();
-        $listenerObject1 = new MarkerListener($markers);
-        $listenerObject2 = new MarkerListener($markers);
 
         // Initializes two listeners.
-        $listener1 = new \Threaded();
-        $listener1[] = $listenerObject1;
-        $listener1[] = 'mark';
-
-        $listener2 = new \Threaded();
-        $listener2[] = $listenerObject2;
-        $listener2[] = 'mark';
+        $listener1 = [new MarkerListener($markers), 'mark'];
+        $listener2 = [new MarkerListener($markers), 'mark'];
 
         // Binds both listeners to 'event.1'
         $dispatcher->addListener('event.1', $listener1);
@@ -250,7 +196,7 @@ class EventDispatcherTest extends \PHPUnit_Framework_TestCase
 
         // Asserts that only listener1 is called.
         // Listener2 is skiped because the event propagation has been stopped.
-        $this->assertSame($listenerObject1, $markers[0]);
+        $this->assertSame($listener1[0], $markers[0]);
         $this->assertNull($markers[1]);
     }
 }
