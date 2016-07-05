@@ -1,4 +1,4 @@
-[![Build Status](https://api.travis-ci.org/zerustech/threaded.svg?branch=1.0.x)](https://travis-ci.org/zerustech/threaded)
+[![Build Status](https://api.travis-ci.org/zerustech/threaded.svg?branch=2.0.x)](https://travis-ci.org/zerustech/threaded)
 
 ZerusTech Threaded Component
 ================================================
@@ -10,9 +10,9 @@ develop multi-threaded applications in php-cli.
 
 ::: info-box note
 
-This is version 1.x, which works with PHP 5.x and pthreads 2.x.
+This is version 2.x, which works with PHP 7.x and pthreads 3.x.
 
-If you want to use pthreads 3.x, please install version 2.x instead.
+If you want to use pthreads 2.x, please install version 1.x instead.
 
 :::
 
