@@ -94,7 +94,7 @@ class Consumer extends \Thread
     {
         $remaining = $this->length;
 
-        while ($remaining-- > 0) {
+        while (0 < $remaining--) {
 
             // If the piped input stream is empty, the thread will be blocked.
             $data = $this->input->read();
@@ -108,8 +108,7 @@ class Consumer extends \Thread
 $output = new PipedOutputStream();
 
 // Initializes a piped input stream.
-$buffer = new \Threaded();
-$input = new PipedInputStream($buffer);
+$input = new PipedInputStream();
 
 // Connects the piped output stream with the piped input stream.
 $input->connect($output);
