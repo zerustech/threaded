@@ -5,7 +5,7 @@
  *
  * (c) Michael Lee <michael.lee@zerustech.com>
  *
- * For full copyright and license information, please view the LICENSE file that 
+ * For full copyright and license information, please view the LICENSE file that
  * was distributed with this source code.
  */
 namespace ZerusTech\Component\Threaded\Tests\EventDispatcher;
@@ -28,7 +28,7 @@ class EventTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($subject, $event->getSubject());
         $this->assertSame($arguments, $event->getArguments());
     }
-  
+
     /**
      * Test getter and setters.
      */

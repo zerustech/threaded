@@ -64,9 +64,9 @@ class EventDispatcherTest extends \PHPUnit_Framework_TestCase
         $listeners = $dispatcher->getListeners('event.2');
 
         // Asserts listeners are listed correctly.
-        $this->assertSame($listener1[0], $listeners[2][0]);
-        $this->assertSame($listener2[0], $listeners[0][0]);
-        $this->assertSame($listener3[0], $listeners[1][0]);
+        $this->assertSame($listener1[0], $listeners[0][0]);
+        $this->assertSame($listener2[0], $listeners[1][0]);
+        $this->assertSame($listener3[0], $listeners[2][0]);
 
         // Lists all listeners for all event names.
         $listeners = $dispatcher->getListeners();
@@ -74,9 +74,9 @@ class EventDispatcherTest extends \PHPUnit_Framework_TestCase
         // Asserts listeners are listed correctly.
         $this->assertSame($listener1[0], $listeners['event.1'][0][0]);
         $this->assertSame($listener2[0], $listeners['event.1'][1][0]);
-        $this->assertSame($listener1[0], $listeners['event.2'][2][0]);
-        $this->assertSame($listener2[0], $listeners['event.2'][0][0]);
-        $this->assertSame($listener3[0], $listeners['event.2'][1][0]);
+        $this->assertSame($listener1[0], $listeners['event.2'][0][0]);
+        $this->assertSame($listener2[0], $listeners['event.2'][1][0]);
+        $this->assertSame($listener3[0], $listeners['event.2'][2][0]);
 
         // Tests hasListeners()
         // --------------------
@@ -132,18 +132,38 @@ class EventDispatcherTest extends \PHPUnit_Framework_TestCase
 
         // Asserts the order of listeners for event.4
         $listeners = $dispatcher->getListeners('event.4');
-        $this->assertSame($listener1[0], $listeners[0][0]);
-        $this->assertSame($listener2[0], $listeners[3][0]);
-        $this->assertSame($listener3[0], $listeners[1][0]);
-        $this->assertSame($listener4[0], $listeners[2][0]);
+        $this->assertSame($listener1[0], $listeners[1][0]);
+        $this->assertSame($listener2[0], $listeners[0][0]);
+        $this->assertSame($listener3[0], $listeners[2][0]);
+        $this->assertSame($listener4[0], $listeners[3][0]);
 
         // Tries to remove listener3 and asserts the order of the remaining
         // listeners
         $dispatcher->removeListener('event.4', $listener3);
         $listeners = $dispatcher->getListeners('event.4');
-        $this->assertSame($listener1[0], $listeners[0][0]);
-        $this->assertSame($listener2[0], $listeners[2][0]);
-        $this->assertSame($listener4[0], $listeners[1][0]);
+        $this->assertSame($listener1[0], $listeners[1][0]);
+        $this->assertSame($listener2[0], $listeners[0][0]);
+        $this->assertSame($listener4[0], $listeners[2][0]);
+
+        // Tries to remove all remaining listeners, and asserts the empty
+        // listeners.
+        $dispatcher->removeListener('event.2', $listener1);
+        $dispatcher->removeListener('event.2', $listener2);
+        $dispatcher->removeListener('event.2', $listener3);
+        $dispatcher->removeListener('event.3', $listener1);
+        $dispatcher->removeListener('event.3', $listener3);
+        $dispatcher->removeListener('event.4', $listener1);
+        $dispatcher->removeListener('event.4', $listener2);
+        $dispatcher->removeListener('event.4', $listener4);
+
+        $this->assertEmpty($dispatcher->getListeners('event.2'));
+        $this->assertEmpty($dispatcher->getListeners('event.3'));
+        $this->assertEmpty($dispatcher->getListeners('event.4'));
+        $this->assertEmpty($dispatcher->getListeners());
+
+        $this->assertNull($dispatcher->listeners['event.2']);
+        $this->assertNull($dispatcher->listeners['event.3']);
+        $this->assertNull($dispatcher->listeners['event.4']);
     }
 
     public function testDispatch()

@@ -12,49 +12,54 @@
 namespace ZerusTech\Component\Threaded\EventDispatcher;
 
 /**
- * The default event dispatcher that supports pthread v2.x.
+ * The default event dispatcher that supports pthread v3.x.
  *
  * @author Michael Lee <michael.lee@zerustech.com>
  */
 class EventDispatcher extends \Threaded implements EventDispatcherInterface
 {
     /**
-     * A threaded instance that keeps track of the index of the next listener
-     * for a given event name and priority. The key of this instance is:
-     * ``event name / priority``, and the value is an integer.
+     * A volatile instance that holds the listeners added to current dispatcher
+     * as follows:
      *
-     * @var \Threaded The threaded instance that stores the indexes.
-     */
-    private $indexes;
-
-    /**
-     * A threaded instance that contains keys of listeners. The key of this
-     * instance is: ``event name``, and the value is a string consists of keys
-     * of all listeners for the given event name, separated by comma ``,`` and
-     * sorted natrually.
+     *     [
+     *         'event name 1' => [
+     *             'priority 1' => [listener 1.1, ...],
+     *             'priority 2' => [listener 2.1, ...],
+     *             ...
+     *         ],
+     *         ...
+     *     ]
      *
-     * @var \Threaded The threaded instance that stores the keys of listeners.
-     */
-    private $keys;
-
-    /**
-     * A threaded instance that contains all listeners. The key of this instance
-     * is: ``event name / priority / index from the indexes``.
-     *
-     * @var \Threaded The threaded instance that stores the listeners.
+     * @var \Volatile The volatile instance that stores the listeners.
      */
     private $listeners;
+
+    /**
+     * A volatile instance that holds the listeners sorted by priority in
+     * descended order:
+     *
+     *     [
+     *         'event name 1' => [
+     *             10 => [listener 1.1, ...],
+     *             5 => [listener 2.1, ...],
+     *             ...
+     *         ],
+     *         ...
+     *     ]
+     *
+     * @var \volatile The volatile instance that stores sorted listeners.
+     */
+    private $sorted;
 
     /**
      * Constructor.
      */
     public function __construct()
     {
-        $this->indexes = new \Volatile();
-
-        $this->keys = new \Volatile();
-
         $this->listeners = new \Volatile();
+
+        $this->sorted = new \Volatile();
     }
 
     /**
@@ -62,29 +67,23 @@ class EventDispatcher extends \Threaded implements EventDispatcherInterface
      */
     public function addListener($eventName, array $listener, $priority = 0)
     {
-        // The key of the index in the threaded indexes.
-        $indexKey = $eventName.'/'.$priority;
+        // Intializes indexes in $this->listeners
+        if (false === isset($this->listeners[$eventName])) {
 
-        // Increases the index by 1
-        $this->indexes[$indexKey] = isset($this->indexes[$indexKey]) ? $this->indexes[$indexKey] + 1 : 0;
+            $this->listeners[$eventName] = new \Volatile();
+        }
 
-        // The key of the listener: event naem / priority / index
-        $key = $eventName.'/'.$priority.'/'.$this->indexes[$indexKey];
+        if (false === isset($this->listeners[$eventName][$priority])) {
 
-        // Restores keys for the given event name from the threaded keys.
-        $keys = isset($this->keys[$eventName]) ? explode(',', $this->keys[$eventName]) : [];
+            $this->listeners[$eventName][$priority] = new \Volatile();
+        }
 
-        // Adds the new key to the threaded keys
-        $keys[] = $key;
+        // Adds listener to $this->listeners
+        $this->listeners[$eventName][$priority][] = $listener;
 
-        // Sorts keys naturally.
-        sort($keys, SORT_NATURAL);
-
-        // Stores keys back to the threaded keys
-        $this->keys[$eventName] = implode(',', $keys);
-
-        // Adds listener to the threaded listeners with the new key.
-        $this->listeners[$key] = $listener;
+        // Since new listener is added, the sorted listeners must be
+        // regenerated.
+        unset($this->sorted[$eventName]);
 
         return $this;
     }
@@ -94,42 +93,43 @@ class EventDispatcher extends \Threaded implements EventDispatcherInterface
      */
     public function removeListener($eventName, array $listener)
     {
-        // If listener is not listening at the given event name, returns.
-        if (!isset($this->keys[$eventName])) {
+        $all = (array)$this->listeners[$eventName];
 
-            return;
+        $matched = false;
+
+        // Loops all listeners for event name and unsets all listener that is
+        // identical to the given listener.
+        foreach ($all as $priority => $listeners) {
+
+            foreach ($listeners as $index => $element) {
+
+                if ($listener[0] === $element[0] && $listener[1] === $element[1]) {
+
+                    unset($this->listeners[$eventName][$priority][$index]);
+
+                    $matched = true;
+                }
+            }
         }
 
-        // Restores keys for the given event name from the threaded keys
-        $keys = explode(',', $this->keys[$eventName]);
+        if ($matched) {
 
-        foreach ($keys as $key) {
+            // Unsets empty indexes for the given event name.
+            foreach ($this->listeners[$eventName] as $priority => $listeners) {
 
-            // If finds a match in the threaded listeners
-            if ($listener[0] === $this->listeners[$key][0] && $listener[1] === $this->listeners[$key][1]) {
+                if (0 === $listeners->count()) {
 
-                // Unsets it from the threaded listeners.
-                unset($this->listeners[$key]);
-
-                $index = array_search($key, $keys, true);
-
-                // Unsets its key from the threaded keys
-                unset($keys[$index]);
-
-                if (0 === count($keys)) {
-
-                    // If no key left for the given event name, unsets its keys
-                    // from the threaded keys.
-                    unset($this->keys[$eventName]);
-
-                } else {
-
-                    // Stores the keys back.
-                    $this->keys[$eventName] = implode(',', $keys);
+                    unset($this->listeners[$eventName][$priority]);
                 }
-
-                break;
             }
+
+            if (0 === $this->listeners[$eventName]->count()) {
+
+                unset($this->listeners[$eventName]);
+            }
+
+            // Unsets sorted listeners for the given event name.
+            unset($this->sorted[$eventName]);
         }
 
         return $this;
@@ -140,43 +140,10 @@ class EventDispatcher extends \Threaded implements EventDispatcherInterface
      */
     public function getListeners($eventName = null)
     {
-        // If event name is null, tries to find all listeners.
-        if (null === $eventName) {
+        // Sorts listeners
+        $this->sortListeners($eventName);
 
-            // Gets all event names.
-            $eventNames = array_keys((array)$this->keys);
-
-            $listeners = [];
-
-            foreach ($eventNames as $eventName) {
-
-                // Gets listeners for each event name and adds the listeners to
-                // the threaded listeners.
-                $listeners[$eventName] = $this->getListeners($eventName);
-            }
-
-            // returns the threaded listeners.
-            return $listeners;
-        }
-
-        if (!isset($this->keys[$eventName])) {
-
-            // If no key is found for the given event name, returns an empty
-            // array.
-            return array();
-        }
-
-        // Returns all listeners for the given event name.
-        $listeners = [];
-
-        $keys = explode(',', $this->keys[$eventName]);
-
-        foreach ($keys as $key) {
-
-            $listeners[] = $this->listeners[$key];
-        }
-
-        return $listeners;
+        return null === $eventName ? (array)$this->sorted : (array)$this->sorted[$eventName];
     }
 
     /**
@@ -191,36 +158,30 @@ class EventDispatcher extends \Threaded implements EventDispatcherInterface
      * Finds priority of the given listener for the event name.
      *
      * @param string $eventName The event name.
-     * @param \Threaded $listener The listener.
+     * @param array $listener The listener.
+     * @return int|null The priority of the listener, or null if the listener is
+     * not listening at the event name.
      */
     public function getListenerPriority($eventName, array $listener)
     {
-        // If no listener exists for the event name, returns.
-        if (!isset($this->keys[$eventName])) {
+        $result = null;
 
-            return;
-        }
+        $all = (array)$this->listeners[$eventName];
 
-        $priority = null;
+        foreach ($all as $priority => $listeners) {
 
-        // Restores keys for the event name.
-        $keys = explode(',', $this->keys[$eventName]);
+            foreach ($listeners as $index => $element) {
 
-        foreach ($keys as $key) {
+                if ($listener[0] === $element[0] && $listener[1] === $element[1]) {
 
-            // If finds a match, parses its priority from the key.
-            if ($listener[0] === $this->listeners[$key][0] && $listener[1] === $this->listeners[$key][1]) {
+                    $result = $priority;
 
-                $meta = explode('/', $key);
-
-                $priority = $meta[1];
-
-                break;
+                    break 2;
+                }
             }
         }
 
-        // Returns the priority.
-        return $priority;
+        return $result;
     }
 
     /**
@@ -228,10 +189,7 @@ class EventDispatcher extends \Threaded implements EventDispatcherInterface
      */
     public function dispatch($eventName, Event $event = null)
     {
-        if (null === $event) {
-
-            $event = new Event();
-        }
+        $event = null === $event ? new Event() : $event;
 
         if ($listeners = $this->getListeners($eventName)) {
 
@@ -243,10 +201,10 @@ class EventDispatcher extends \Threaded implements EventDispatcherInterface
 
     /**
      * Dispatches an event to all listeners listening at the event name.
-     * @param \Threaded[] $listeners The listeners to be triggered.
+     * @param array $listeners The listeners to be triggered.
      * @param string $eventName The event name.
      * @param Event $event The event.
-     * @return void
+     * @return EventDispatcherInterface Current instance.
      */
     protected function doDispatch(array $listeners, $eventName, Event $event)
     {
@@ -256,10 +214,47 @@ class EventDispatcher extends \Threaded implements EventDispatcherInterface
 
             call_user_func($listener, $event, $eventName, $this);
 
-            if (null !== $event && $event->isPropagationStopped()) {
+            if ($event->isPropagationStopped()) {
 
                 break;
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * Sorts listeners of the given event name or all, if event name is omitted,
+     * by priority in descended order.
+     * @param string $eventName The event name.
+     * @return EventDispatcherInterface Current instance.
+     */
+    private function sortListeners($eventName = null)
+    {
+        $names = null === $eventName ? array_keys((array)$this->listeners) : [$eventName];
+
+        foreach ($names as $name) {
+
+            if (isset($this->sorted[$name]) || !isset($this->listeners[$name])) {
+
+                continue;
+            }
+
+            $listeners = (array)$this->listeners[$name];
+
+            krsort($listeners);
+
+            $this->sorted[$name] = new \Volatile();
+
+            foreach ($listeners as $priority => $elements) {
+
+                foreach ($elements as $element) {
+
+                    $this->sorted[$name][] = $element;
+                }
+            }
+        }
+
+        return $this;
     }
 }
