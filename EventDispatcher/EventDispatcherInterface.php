@@ -33,8 +33,8 @@ interface EventDispatcherInterface
      * @param \Threaded $listener A threaded object contains two elements: the
      * first one is the reference to the listener object, and the 2nd one is the
      * method name.
-     * @param int priority The priority of the listener. The smaller the value
-     * is, the higher the priority.
+     * @param int priority The priority of the listener. The greater the value,
+     * the higher the priority.
      * @return EventDispatcherInterface Current instance.
      */
     public function addListener($eventName, \Threaded $listener, $priority = 0);

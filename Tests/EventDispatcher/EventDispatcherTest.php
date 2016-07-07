@@ -99,9 +99,9 @@ class EventDispatcherTest extends \PHPUnit_Framework_TestCase
         $listeners = $dispatcher->getListeners('event.2');
 
         // Asserts listeners are listed correctly.
-        $this->assertSame($listener1, $listeners[2]);
-        $this->assertSame($listener2, $listeners[0]);
-        $this->assertSame($listener3, $listeners[1]);
+        $this->assertSame($listener1, $listeners[0]);
+        $this->assertSame($listener2, $listeners[1]);
+        $this->assertSame($listener3, $listeners[2]);
 
         // Lists all listeners for all event names.
         $listeners = $dispatcher->getListeners();
@@ -109,9 +109,9 @@ class EventDispatcherTest extends \PHPUnit_Framework_TestCase
         // Asserts listeners are listed correctly.
         $this->assertSame($listener1, $listeners['event.1'][0]);
         $this->assertSame($listener2, $listeners['event.1'][1]);
-        $this->assertSame($listener1, $listeners['event.2'][2]);
-        $this->assertSame($listener2, $listeners['event.2'][0]);
-        $this->assertSame($listener3, $listeners['event.2'][1]);
+        $this->assertSame($listener1, $listeners['event.2'][0]);
+        $this->assertSame($listener2, $listeners['event.2'][1]);
+        $this->assertSame($listener3, $listeners['event.2'][2]);
 
         // Tests hasListeners()
         // --------------------
@@ -166,18 +166,18 @@ class EventDispatcherTest extends \PHPUnit_Framework_TestCase
 
         // Asserts the order of listeners for event.4
         $listeners = $dispatcher->getListeners('event.4');
-        $this->assertSame($listener1, $listeners[0]);
-        $this->assertSame($listener2, $listeners[3]);
-        $this->assertSame($listener3, $listeners[1]);
-        $this->assertSame($listener4, $listeners[2]);
+        $this->assertSame($listener1, $listeners[1]);
+        $this->assertSame($listener2, $listeners[0]);
+        $this->assertSame($listener3, $listeners[2]);
+        $this->assertSame($listener4, $listeners[3]);
 
         // Tries to remove listener3 and asserts the order of the remaining
         // listeners
         $dispatcher->removeListener('event.4', $listener3);
         $listeners = $dispatcher->getListeners('event.4');
-        $this->assertSame($listener1, $listeners[0]);
-        $this->assertSame($listener2, $listeners[2]);
-        $this->assertSame($listener4, $listeners[1]);
+        $this->assertSame($listener1, $listeners[1]);
+        $this->assertSame($listener2, $listeners[0]);
+        $this->assertSame($listener4, $listeners[2]);
     }
 
     public function testDispatch()

@@ -147,43 +147,45 @@ class EventDispatcher extends \Threaded implements EventDispatcherInterface
      */
     public function getListeners($eventName = null)
     {
-        // If event name is null, tries to find all listeners.
-        if (null === $eventName) {
+        $names = (null === $eventName ? array_keys((array)$this->keys) : [$eventName]);
 
-            // Gets all event names.
-            $eventNames = array_keys((array)$this->keys);
+        $all = [];
+
+        foreach ($names as $name) {
 
             $listeners = [];
 
-            foreach ($eventNames as $eventName) {
+            if (!isset($this->keys[$name])) {
 
-                // Gets listeners for each event name and adds the listeners to
-                // the threaded listeners.
-                $listeners[$eventName] = $this->getListeners($eventName);
+                continue;
             }
 
-            // returns the threaded listeners.
-            return $listeners;
+            $sorted = [];
+
+            $keys = explode(',', $this->keys[$name]);
+
+            foreach ($keys as $key) {
+
+                $meta = explode('/', $key);
+
+                $priority = $meta[1];
+
+                if (false === isset($sorted[$priority])) {
+
+                    $sorted[$priority] = [];
+                }
+
+                $sorted[$priority][] = $this->listeners[$key];
+            }
+
+            krsort($sorted);
+
+            $listeners = call_user_func_array('array_merge', $sorted);
+
+            $all[$name] = $listeners;
         }
 
-        if (!isset($this->keys[$eventName])) {
-
-            // If no key is found for the given event name, returns an empty
-            // array.
-            return array();
-        }
-
-        // Returns all listeners for the given event name.
-        $listeners = [];
-
-        $keys = explode(',', $this->keys[$eventName]);
-
-        foreach ($keys as $key) {
-
-            $listeners[] = $this->listeners[$key];
-        }
-
-        return $listeners;
+        return (1 === count($all) ? array_shift($all) : $all);
     }
 
     /**
