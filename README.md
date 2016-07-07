@@ -1,5 +1,3 @@
-[![Build Status](https://api.travis-ci.org/zerustech/threaded.svg?branch=v2.0.x)](https://travis-ci.org/zerustech/threaded)
-
 ZerusTech Threaded Component
 ================================================
 The *ZerusTech Threaded Component* is a library that provides some commonly used
