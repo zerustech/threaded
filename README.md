@@ -1,3 +1,5 @@
+[![Build Status](https://api.travis-ci.org/zerustech/threaded.svg)](https://travis-ci.org/zerustech/threaded)
+
 ZerusTech Threaded Component
 ================================================
 The *ZerusTech Threaded Component* is a library that provides some commonly used
@@ -22,7 +24,7 @@ You can install this component in 2 different ways:
 * Install it via Composer
 ```bash
 $ cd <project-root-directory>
-$ composer require zerustech/threaded
+$ composer require zerustech/threaded:2.*
 ```
 
 * Use the official Git repository [zerustech/threaded][4]

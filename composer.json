@@ -2,6 +2,7 @@
     "name": "zerustech/threaded",
     "description": "ZerusTech Threaded Component",
     "type": "library",
+    "keywords": ["multi-threaded", "thread", "multi-threading", "stream", "piped input stream", "piped output stream"],  
     "license": "MIT",
     "authors": [
         {
@@ -12,12 +13,17 @@
     "require": {
         "php": ">=7.0",
         "ext-pthreads": ">=3.1.6",
-        "zerustech/io": "dev-master"
+        "zerustech/io": ">=1.0.2"
     },
     "autoload": {
         "psr-4": {
             "ZerusTech\\Component\\Threaded\\": ".",
             "ZerusTech\\Component\\Threaded\\Tests\\": "./Tests"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "2.1-dev"
         }
     }
 }
