@@ -18,9 +18,6 @@ namespace ZerusTech\Component\Threaded\EventDispatcher;
  * objects can't be mocked. So if the listener is 'marked' in the listener
  * container, we will know that the listener has been triggered.
  *
- * Due to the local variable issue of pthreads v2.x, the threaded object that
- * holds the listeners must be initialized and passed from the outside.
- *
  * @author Michael Lee <michael.lee@zerustech.com>
  */
 class MarkerListener extends \Threaded

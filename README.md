@@ -45,7 +45,7 @@ When the upstream is empty, the piped input stream will be blocked, and if the
 downstream is full, the piped output stream wil be blocked as well.
 
 The blocked piped input stream will be notified, as soon as the piped output
-stream writes any data to it and is closed, and the blocked piped output stream
+stream writes any data to it or is closed, and the blocked piped output stream
 will be notified, as soon as the piped input stream reads any data from the
 upstream or is closed.
 
