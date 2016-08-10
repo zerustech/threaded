@@ -30,13 +30,13 @@ class PipedInputStream extends AbstractInputStream implements PipedInputStreamIn
     /**
      * @var PipedOutputStreamInterface The output stream to connect.
      */
-    protected $upstream;
+    private $upstream;
 
     /**
      * @var \Threaded The queue shared by the input stream and the output
      * stream.
      */
-    protected $buffer;
+    private $buffer;
 
     /**
      * The maximum number of bytes the buffer can hold.
@@ -67,22 +67,6 @@ class PipedInputStream extends AbstractInputStream implements PipedInputStreamIn
 
             $this->connect($upstream, true);
         }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getUpstream()
-    {
-        return $this->upstream;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getBuffer()
-    {
-        return $this->buffer;
     }
 
     /**
@@ -226,6 +210,9 @@ class PipedInputStream extends AbstractInputStream implements PipedInputStreamIn
      */
     public function available()
     {
-        return $this->buffer->count();
+        return $this->synchronized(function(){
+
+            return $this->buffer->count();
+        });
     }
 }

@@ -13,7 +13,7 @@
     "require": {
         "php": ">=5.4",
         "ext-pthreads": "^2.0.10",
-        "zerustech/io": ">=1.1.0"
+        "zerustech/io": "^1.1.0"
     },
     "autoload": {
         "psr-4": {

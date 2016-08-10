@@ -70,14 +70,6 @@ class PipedOutputStream extends AbstractOutputStream implements PipedOutputStrea
     /**
      * {@inheritdoc}
      */
-    public function getDownstream()
-    {
-        return $this->downstream;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function connect(PipedInputStreamInterface $downstream, $force = false, $reverse = true)
     {
         $this->dispatch(self::EVENT_CONNECT_BEFORE);

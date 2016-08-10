@@ -25,18 +25,6 @@ use ZerusTech\Component\Threaded\Stream\Output\PipedOutputStreamInterface;
 interface PipedInputStreamInterface
 {
     /**
-     * Gets the piped output stream that is connected to current stream.
-     * @return PipedOutputStreamInterface The piped output stream.
-     */
-    public function getUpstream();
-
-    /**
-     * Gets the buffer shared by both ends of the pipe.
-     * @return \Threaded The buffer.
-     */
-    public function getBuffer();
-
-    /**
      * Connects current stream to a piped output stream.
      *
      * @param PipedOutputStreamInterface $upstream The piped output stream to
