@@ -9,9 +9,8 @@
  * that was distributed with this source code.
  */
 
-namespace ZerusTech\Component\Threaded\Stream;
+namespace ZerusTech\Component\Threaded\EventDispatcher;
 
-use ZerusTech\Component\IO\Stream\ClosableInterface;
 use ZerusTech\Component\Threaded\EventDispatcher\Event;
 use ZerusTech\Component\Threaded\EventDispatcher\EventDispatcher;
 use ZerusTech\Component\Threaded\EventDispatcher\EventDispatcherInterface;
@@ -19,63 +18,28 @@ use ZerusTech\Component\Threaded\EventDispatcher\EventDispatcherContainerInterfa
 
 
 /**
- * This abstract class is the superclass of all classes representing a
- * thread-safe input or output stream.
+ * This class represents a thread-safe container for event dispatcher.
  *
  * A thread-safe stream can be accessed by multiple threads and maintain the
  * data consistency.
  *
  * @author Michael Lee <michael.lee@zerustech.com>
  */
-abstract class AbstractStream extends \Threaded implements ClosableInterface, EventDispatcherContainerInterface
+class EventDispatcherContainer extends \Threaded implements EventDispatcherContainerInterface
 {
-    /**
-     * @var resource The resource being held by current stream.
-     */
-    protected $resource;
-
-    /**
-     * @var bool True if current resource is closed, and false otherwise.
-     */
-    protected $closed;
-
     /**
      * @var EventDispatcherInterface The event dispatcher.
      */
-    protected $dispatcher;
-
-    /**
-     * Name of the event before connection.
-     */
-    const EVENT_CONNECT_BEFORE = 'connect.before';
+    private $dispatcher;
 
     /**
      * Constructor.
      *
-     * @param resource $resource The underlying resource.
+     * @param EventDispatcherInterface $dispatcher The event dispatcher.
      */
-    public function __construct($resource)
+    public function __construct($dispatcher)
     {
-        $this->resource = $resource;
-
-        $this->closed = false === $this->resource ? true : false;
-    }
-
-    /**
-     * Gets the underlying resource.
-     * @return resource The underlying resource.
-     */
-    public function getResource()
-    {
-        return $this->resource;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function isClosed()
-    {
-        return $this->closed;
+        $this->dispatcher = $dispatcher;
     }
 
     /**
@@ -135,7 +99,7 @@ abstract class AbstractStream extends \Threaded implements ClosableInterface, Ev
      */
     public function getListeners($eventName = null)
     {
-        return null !== $this->dispatcher ? $this->dispatcher->getListener($eventName) : [];
+        return null !== $this->dispatcher ? $this->dispatcher->getListeners($eventName) : [];
     }
 
     /**
@@ -143,6 +107,6 @@ abstract class AbstractStream extends \Threaded implements ClosableInterface, Ev
      */
     public function hasListeners($eventName = null)
     {
-        return null !== $this->dispatcher ? $this->dispatcher->hasListener($eventName) : false;
+        return null !== $this->dispatcher ? $this->dispatcher->hasListeners($eventName) : false;
     }
 }

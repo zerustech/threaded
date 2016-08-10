@@ -13,17 +13,12 @@
     "require": {
         "php": ">=5.4",
         "ext-pthreads": "^2.0.10",
-        "zerustech/io": "~1.0.2"
+        "zerustech/io": ">=1.1.0"
     },
     "autoload": {
         "psr-4": {
             "ZerusTech\\Component\\Threaded\\": ".",
             "ZerusTech\\Component\\Threaded\\Tests\\": "./Tests"
-        }
-    },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "2.1-dev"
         }
     }
 }

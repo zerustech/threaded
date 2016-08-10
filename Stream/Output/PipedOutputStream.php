@@ -12,8 +12,6 @@
 namespace ZerusTech\Component\Threaded\Stream\Output;
 
 use ZerusTech\Component\IO\Exception\IOException;
-use ZerusTech\Component\IO\Stream\Output\OutputStreamInterface;
-use ZerusTech\Component\Threaded\Stream\AbstractStream;
 use ZerusTech\Component\Threaded\Stream\Input\PipedInputStreamInterface;
 use ZerusTech\Component\Threaded\EventDispatcher\EventDispatcher;
 use ZerusTech\Component\Threaded\EventDispatcher\Event;
@@ -31,12 +29,12 @@ use ZerusTech\Component\Threaded\EventDispatcher\Event;
  *
  * @author Michael Lee <michael.lee@zerustech.com>
  */
-class PipedOutputStream extends AbstractStream implements OutputStreamInterface, PipedOutputStreamInterface
+class PipedOutputStream extends AbstractOutputStream implements PipedOutputStreamInterface
 {
     /**
      * @var PipedInputStream The input stream to connect.
      */
-    protected $downstream;
+    private $downstream;
 
     /**
      * Name of the event before calling receive() in write() method.
