@@ -12,8 +12,6 @@
 namespace ZerusTech\Component\Threaded\Stream\Input;
 
 use ZerusTech\Component\IO\Exception\IOException;
-use ZerusTech\Component\IO\Stream\Input\InputStreamInterface;
-use ZerusTech\Component\Threaded\Stream\AbstractStream;
 use ZerusTech\Component\Threaded\Stream\Output\PipedOutputStream;
 use ZerusTech\Component\Threaded\Stream\Output\PipedOutputStreamInterface;
 use ZerusTech\Component\Threaded\EventDispatcher\Event;
@@ -26,7 +24,7 @@ use ZerusTech\Component\Threaded\EventDispatcher\EventDispatcher;
  * @author Michael Lee <michael.lee@zerustech.com>
  * @see PipedOutputStream
  */
-class PipedInputStream extends AbstractStream implements InputStreamInterface, PipedInputStreamInterface
+class PipedInputStream extends AbstractInputStream implements PipedInputStreamInterface
 {
     /**
      * @var PipedOutputStreamInterface The output stream to connect.
@@ -67,22 +65,6 @@ class PipedInputStream extends AbstractStream implements InputStreamInterface, P
 
             $this->connect($upstream, true);
         }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getUpstream()
-    {
-        return $this->upstream;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getBuffer()
-    {
-        return $this->buffer;
     }
 
     /**
@@ -219,5 +201,17 @@ class PipedInputStream extends AbstractStream implements InputStreamInterface, P
         $this->notify();
 
         return $this;
+    }
+
+    /**
+     * {@inherit}
+     */
+    public function available()
+    {
+        return $this->synchronized(
+            function () {
+                return $this->buffer->count();
+            }
+        );
     }
 }

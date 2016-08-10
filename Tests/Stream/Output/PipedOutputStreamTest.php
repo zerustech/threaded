@@ -25,18 +25,39 @@ use ZerusTech\Component\Threaded\EventDispatcher\MarkerListener;
  */
 class PipedOutputStreamTest extends \PHPUnit_Framework_TestCase
 {
+    public function setup()
+    {
+        $this->ref = new \ReflectionClass('ZerusTech\Component\Threaded\Stream\Output\PipedOutputStream');
+
+        $this->downstream = $this->ref->getProperty('downstream');
+        $this->downstream->setAccessible(true);
+
+        $this->downstreamRef = new \ReflectionClass('ZerusTech\Component\Threaded\Stream\Input\PipedInputStream');
+        $this->buffer = $this->downstreamRef->getProperty('buffer');
+        $this->buffer->setAccessible(true);
+    }
+
+    public function tearDown()
+    {
+        $this->downstream = null;
+        $this->ref = null;
+
+        $this->buffer = null;
+        $this->downstreamRef = null;
+    }
+
     public function testConstructor()
     {
         $downstream = new PipedInputStream();
         $output = new PipedOutputStream($downstream);
-        $this->assertSame($downstream, $output->getDownstream());
+        $this->assertSame($downstream, $this->downstream->getValue($output));
         $this->assertFalse($output->isClosed());
     }
 
     public function testConstructorWithNull()
     {
         $output = new PipedOutputStream();
-        $this->assertNull($output->getDownstream());
+        $this->assertNull($this->downstream->getValue($output));
         $this->assertFalse($output->isClosed());
     }
 
@@ -50,7 +71,7 @@ class PipedOutputStreamTest extends \PHPUnit_Framework_TestCase
         $output = new PipedOutputStream();
         $output->connect($downstream);
 
-        $this->assertSame($downstream, $output->getDownstream());
+        $this->assertSame($downstream, $this->downstream->getValue($output));
         $this->assertFalse($output->isClosed());
     }
 
@@ -144,7 +165,7 @@ class PipedOutputStreamTest extends \PHPUnit_Framework_TestCase
         $output->connect($downstream);
         $output->connect($downstream, true);
 
-        $this->assertSame($downstream, $output->getDownstream());
+        $this->assertSame($downstream, $this->downstream->getValue($output));
         $this->assertFalse($output->isClosed());
     }
 
@@ -234,7 +255,7 @@ class PipedOutputStreamTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($listener[0], $listener[0]->markers[0]);
 
         // Asserts '*' has been written to the piped output stream.
-        $this->assertEquals($data, implode('', array_values((array)$downstream->getBuffer())));
+        $this->assertEquals($data, implode('', array_values((array)$this->buffer->getValue($downstream))));
     }
 
     /**
@@ -256,7 +277,7 @@ class PipedOutputStreamTest extends \PHPUnit_Framework_TestCase
         $downstream = new PipedInputStream();
 
         // Initializes buffer and fills it up with '*'.
-        $buffer = $downstream->getBuffer();
+        $buffer = $this->buffer->getValue($downstream);
         for ($i = 0; $i < PipedInputStream::BUFFER_SIZE; $i++) {
             $buffer[] = '*';
         }
@@ -275,7 +296,7 @@ class PipedOutputStreamTest extends \PHPUnit_Framework_TestCase
         // Shifts one byte off the buffer and notify the thread.
         $downstream->synchronized(function(){
 
-            $buffer = $this->getBuffer();
+            $buffer = $this->buffer;
 
             $buffer->shift();
 

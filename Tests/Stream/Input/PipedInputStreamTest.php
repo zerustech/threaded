@@ -25,18 +25,36 @@ use ZerusTech\Component\Threaded\EventDispatcher\MarkerListener;
  */
 class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
 {
+    public function setup()
+    {
+        $this->ref = new \ReflectionClass('ZerusTech\Component\Threaded\Stream\Input\PipedInputStream');
+
+        $this->upstream = $this->ref->getProperty('upstream');
+        $this->upstream->setAccessible(true);
+
+        $this->buffer = $this->ref->getProperty('buffer');
+        $this->buffer->setAccessible(true);
+    }
+
+    public function tearDown()
+    {
+        $this->buffer = null;
+        $this->upstream = null;
+        $this->ref = null;
+    }
+
     public function testConstructor()
     {
         $upstream = new PipedOutputStream();
         $input = new PipedInputStream($upstream);
-        $this->assertSame($upstream, $input->getUpstream());
+        $this->assertSame($upstream, $this->upstream->getValue($input));
         $this->assertFalse($input->isClosed());
     }
 
     public function testConstructorWithNullUpstream()
     {
         $input = new PipedInputStream();
-        $this->assertNull($input->getUpstream());
+        $this->assertNull($this->upstream->getValue($input));
         $this->assertFalse($input->isClosed());
     }
 
@@ -50,7 +68,7 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
         $input = new PipedInputStream();
         $input->connect($upstream);
 
-        $this->assertSame($upstream, $input->getUpstream());
+        $this->assertSame($upstream, $this->upstream->getValue($input));
         $this->assertFalse($upstream->isClosed());
     }
 
@@ -145,7 +163,7 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
         $input->connect($upstream);
         $input->connect($upstream, true);
 
-        $this->assertSame($upstream, $input->getUpstream());
+        $this->assertSame($upstream, $this->upstream->getValue($input));
         $this->assertFalse($upstream->isClosed());
     }
 
@@ -203,7 +221,7 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
     {
         $input = new PipedInputStream();
 
-        $buffer = $input->getBuffer();
+        $buffer = $this->buffer->getValue($input);
 
         $buffer[] = '*';
 
@@ -228,17 +246,21 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
         // When started, it will wait because the buffer is empty.
         $consumer->start();
 
+        $this->assertEquals(0, $input->available());
+
         // Adds contents to the buffer and notify the thread.
         $input->synchronized(function(){
 
-            $buffer = $this->getBuffer();
+            $buffer = $this->buffer;
+            $buffer[] = '*';
             $buffer[] = '*';
             $this->notify();
-
         });
 
         // Waits till the thread has finished its job.
         $consumer->join();
+
+        $this->assertEquals(1, $input->available());
 
         // Asserts the thread is not waiting.
         $this->assertFalse($input->isRunning());
