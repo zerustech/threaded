@@ -7,6 +7,11 @@ This changelog references the relavant changes (bug and security fixes) done in
 To get the new features in this major release, check the list at the bottom of
 this file.
 
+* 1.0.4 (2016-08-11)
+    * Merge changes in 1.1 back, this is a one-off workaround.
+    * Restored dev-master alias
+    * Moved source code to src
+
 * 1.0.3 (2016-08-10)
     * Removed composer.lock
 
