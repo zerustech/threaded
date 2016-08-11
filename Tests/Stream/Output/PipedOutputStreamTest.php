@@ -25,19 +25,32 @@ use ZerusTech\Component\Threaded\EventDispatcher\MarkerListener;
  */
 class PipedOutputStreamTest extends \PHPUnit_Framework_TestCase
 {
+    public function setup()
+    {
+        $this->ref = new \ReflectionClass('ZerusTech\Component\Threaded\Stream\Output\PipedOutputStream');
+        $this->downstream = $this->ref->getProperty('downstream');
+        $this->downstream->setAccessible(true);
+    }
+
+    public function tearDown()
+    {
+        $this->downstream = null;
+        $this->ref = null;
+    }
+
     public function testConstructor()
     {
         $buffer = new \Threaded();
         $downstream = new PipedInputStream($buffer);
         $output = new PipedOutputStream($downstream);
-        $this->assertSame($downstream, $output->getDownstream());
+        $this->assertSame($downstream, $this->downstream->getValue($output));
         $this->assertFalse($output->isClosed());
     }
 
     public function testConstructorWithNull()
     {
         $output = new PipedOutputStream();
-        $this->assertNull($output->getDownstream());
+        $this->assertNull($this->downstream->getValue($output));
         $this->assertFalse($output->isClosed());
     }
 
@@ -52,7 +65,7 @@ class PipedOutputStreamTest extends \PHPUnit_Framework_TestCase
         $output = new PipedOutputStream();
         $output->connect($downstream);
 
-        $this->assertSame($downstream, $output->getDownstream());
+        $this->assertSame($downstream, $this->downstream->getValue($output));
         $this->assertFalse($output->isClosed());
     }
 
@@ -164,7 +177,7 @@ class PipedOutputStreamTest extends \PHPUnit_Framework_TestCase
         $output->connect($downstream);
         $output->connect($downstream, true);
 
-        $this->assertSame($downstream, $output->getDownstream());
+        $this->assertSame($downstream, $this->downstream->getValue($output));
         $this->assertFalse($output->isClosed());
     }
 

@@ -30,12 +30,6 @@ use ZerusTech\Component\Threaded\Stream\Input\PipedInputStreamInterface;
 interface PipedOutputStreamInterface
 {
     /**
-     * Gets the piped input stream that is connected to current stream.
-     * @return PipedInputStreamInterface The piped input stream.
-     */
-    public function getDownstream();
-
-    /**
      * Connects current stream to a piped input stream.
      *
      * @param PipedInputStreamInterface $downstream The piped input stream to

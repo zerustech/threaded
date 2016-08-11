@@ -201,6 +201,7 @@ class EventDispatcher extends \Threaded implements EventDispatcherInterface
      *
      * @param string $eventName The event name.
      * @param \Threaded $listener The listener.
+     * @return int The priority.
      */
     public function getListenerPriority($eventName, \Threaded $listener)
     {
