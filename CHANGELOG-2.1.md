@@ -7,6 +7,11 @@ This changelog references the relavant changes (bug and security fixes) done in
 To get the new features in this major release, check the list at the bottom of
 this file.
 
+* 2.1.1 (2016-08-11)
+    * Moved source files to src
+    * Update dev-master alias to dev-2.1
+    * Merge 1.1 into 2.1
+
 * 2.1.0 (2016-08-10)
     * Removed class ``AbstractStream``.
     * Added class ``AbstractInputStream``.
