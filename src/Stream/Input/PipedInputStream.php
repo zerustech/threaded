@@ -29,13 +29,13 @@ class PipedInputStream extends AbstractInputStream implements PipedInputStreamIn
     /**
      * @var PipedOutputStreamInterface The output stream to connect.
      */
-    protected $upstream;
+    private $upstream;
 
     /**
      * @var \Threaded The queue shared by the input stream and the output
      * stream.
      */
-    protected $buffer;
+    private $buffer;
 
     /**
      * The maximum number of bytes the buffer can hold.

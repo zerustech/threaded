@@ -35,7 +35,7 @@ class PipedOutputStream extends AbstractOutputStream implements PipedOutputStrea
     /**
      * @var PipedInputStream The input stream to connect.
      */
-    protected $downstream;
+    private $downstream;
 
     /**
      * Name of the event before calling receive() in write() method.
