@@ -18,8 +18,7 @@
     "autoload": {
         "psr-4": {
             "ZerusTech\\Component\\Threaded\\": "./src",
-            "ZerusTech\\Component\\Threaded\\Tests\\": "./Tests",
-            "ZerusTech\\Component\\IO\\": "../io/src"
+            "ZerusTech\\Component\\Threaded\\Tests\\": "./Tests"
         }
     },
     "extra": {
