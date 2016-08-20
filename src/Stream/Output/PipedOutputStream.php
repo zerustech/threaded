@@ -103,7 +103,7 @@ class PipedOutputStream extends AbstractOutputStream implements PipedOutputStrea
     /**
      * {@inheritdoc}
      */
-    public function output($string)
+    protected function output($string)
     {
         if (true === $this->closed) {
 
