@@ -39,6 +39,6 @@ class Producer extends \Thread
      */
     public function run()
     {
-        $this->upstream->write($this->data);
+        $this->upstream->output($this->data);
     }
 }

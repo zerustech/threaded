@@ -57,6 +57,8 @@ class PipedInputStream extends AbstractInputStream implements PipedInputStreamIn
      */
     public function __construct(\Threaded $buffer, PipedOutputStreamInterface $upstream = null)
     {
+        parent::__construct();
+
         $this->buffer = $buffer;
 
         $this->upstream = $upstream;
@@ -96,9 +98,9 @@ class PipedInputStream extends AbstractInputStream implements PipedInputStreamIn
     /**
      * {@inheritdoc}
      */
-    public function read($length = 1)
+    protected function input(&$bytes, $length)
     {
-        return $this->synchronized(
+        $bytes = $this->synchronized(
 
             function($self, $length){
 
@@ -139,6 +141,8 @@ class PipedInputStream extends AbstractInputStream implements PipedInputStreamIn
                 return $data;
 
         }, $this, $length);
+
+        return 0 === strlen($bytes) ? -1 : strlen($bytes);
     }
 
     /**

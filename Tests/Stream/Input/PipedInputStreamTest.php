@@ -25,33 +25,22 @@ use ZerusTech\Component\Threaded\EventDispatcher\MarkerListener;
  */
 class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
 {
-    public function setup()
-    {
-        $this->ref = new \ReflectionClass('ZerusTech\Component\Threaded\Stream\Input\PipedInputStream');
-        $this->upstream = $this->ref->getProperty('upstream');
-        $this->upstream->setAccessible(true);
-    }
-
-    public function tearDown()
-    {
-        $this->upstream = null;
-        $this->ref = null;
-    }
-
     public function testConstructor()
     {
         $buffer = new \Threaded();
         $upstream = new PipedOutputStream();
         $input = new PipedInputStream($buffer, $upstream);
-        $this->assertSame($upstream, $this->upstream->getValue($input));
-        $this->assertFalse($input->isClosed());
+
+        $this->assertSame($upstream, $input->upstream);
+        $this->assertFalse($input->closed);
+        $this->assertEquals(0, $input->getPosition());
     }
 
     public function testConstructorWithNullUpstream()
     {
         $buffer = new \Threaded();
         $input = new PipedInputStream($buffer);
-        $this->assertNull($this->upstream->getValue($input));
+        $this->assertNull($input->upstream);
         $this->assertFalse($input->isClosed());
     }
 
@@ -66,7 +55,7 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
         $input = new PipedInputStream($buffer);
         $input->connect($upstream);
 
-        $this->assertSame($upstream, $this->upstream->getValue($input));
+        $this->assertSame($upstream, $input->upstream);
         $this->assertFalse($upstream->isClosed());
     }
 
@@ -179,7 +168,7 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
         $input->connect($upstream);
         $input->connect($upstream, true);
 
-        $this->assertSame($upstream, $this->upstream->getValue($input));
+        $this->assertSame($upstream, $input->upstream);
         $this->assertFalse($upstream->isClosed());
     }
 
@@ -240,9 +229,9 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Tests the read() method of the piped input stream.
+     * Tests the input() method of the piped input stream.
      */
-    public function testRead()
+    public function testInput()
     {
         $buffer = new \Threaded();
 
@@ -252,15 +241,15 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
 
         $input = new PipedInputStream($buffer);
 
-        $data = $input->read(2);
+        $this->assertEquals(2, $input->input($bytes, 2));
 
-        $this->assertEquals($data, '**');
+        $this->assertEquals($bytes, '**');
     }
 
     /**
      * Tests wait() and notify() when buffer is empty.
      */
-    public function testReadWhenBufferIsEmpty()
+    public function testInputWhenBufferIsEmpty()
     {
         // Initializes a piped input stream.
         $buffer = new \Threaded();
@@ -290,5 +279,77 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
 
         // Asserts the thread is not running.
         $this->assertFalse($input->isRunning());
+    }
+
+    /**
+     * @expectedException ZerusTech\Component\IO\Exception\IOException
+     * @expectedExceptionMessage mark/reset not supported.
+     */
+    public function testDummyMethods()
+    {
+        $buffer = new \Threaded();
+        $upstream = new PipedOutputStream();
+        $input = new PipedInputStream($buffer, $upstream);
+
+        $this->assertEquals(0, $input->available());
+        $this->assertSame($input, $input->mark(100));
+        $this->assertFalse($input->markSupported());
+
+        $input->buffer[] = '*';
+        $input->buffer[] = '*';
+        $input->buffer[] = '*';
+        $input->buffer[] = '*';
+        $input->buffer[] = '*';
+
+        $this->assertEquals(5, $input->skip(5));
+        $this->assertFalse($input->isClosed());
+        $input->close();
+        $this->assertTrue($input->isClosed());
+        $input->reset();
+    }
+
+    public function testReadAndReadSubstring()
+    {
+        $buffer = new \Threaded();
+        $buffer[] = '*';
+        $buffer[] = '*';
+        $input = new PipedInputStream($buffer);
+
+        $this->assertEquals(1, $input->read($bytes));
+        $this->assertEquals($bytes, '*');
+
+        $this->assertEquals(1, $input->read($bytes, 1));
+        $this->assertEquals($bytes, '*');
+
+        $input->buffer[] = '*';
+        $input->buffer[] = '*';
+        $input->buffer[] = '*';
+
+        $this->assertEquals(3, $input->readSubstring($bytes, 0, 3));
+        $this->assertEquals($bytes, '***');
+    }
+
+    /**
+     * @dataProvider getDataForTestReadSubstringException
+     * @expectedException \OutOfBoundsException
+     * @expectedExceptionMessage Invalid offset or length.
+     */
+    public function testReadSubstringException($source, $offset, $length)
+    {
+        $buffer = new \Threaded();
+        $input = new PipedInputStream($buffer);
+        $input->readSubstring($source, $offset, $length);
+    }
+
+    public function getDataForTestReadSubstringException()
+    {
+        return [
+            ['*****', 6, 5],
+            ['*****', 0, -5],
+            ['*****', 0, -6],
+            ['*****', 1, 0],
+            ['*****', 2, null],
+            ['*****', 2, false],
+        ];
     }
 }

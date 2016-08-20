@@ -25,32 +25,19 @@ use ZerusTech\Component\Threaded\EventDispatcher\MarkerListener;
  */
 class PipedOutputStreamTest extends \PHPUnit_Framework_TestCase
 {
-    public function setup()
-    {
-        $this->ref = new \ReflectionClass('ZerusTech\Component\Threaded\Stream\Output\PipedOutputStream');
-        $this->downstream = $this->ref->getProperty('downstream');
-        $this->downstream->setAccessible(true);
-    }
-
-    public function tearDown()
-    {
-        $this->downstream = null;
-        $this->ref = null;
-    }
-
     public function testConstructor()
     {
         $buffer = new \Threaded();
         $downstream = new PipedInputStream($buffer);
         $output = new PipedOutputStream($downstream);
-        $this->assertSame($downstream, $this->downstream->getValue($output));
-        $this->assertFalse($output->isClosed());
+        $this->assertSame($downstream, $output->downstream);
+        $this->assertFalse($output->closed);
     }
 
     public function testConstructorWithNull()
     {
         $output = new PipedOutputStream();
-        $this->assertNull($this->downstream->getValue($output));
+        $this->assertNull($output->downstream);
         $this->assertFalse($output->isClosed());
     }
 
@@ -65,7 +52,7 @@ class PipedOutputStreamTest extends \PHPUnit_Framework_TestCase
         $output = new PipedOutputStream();
         $output->connect($downstream);
 
-        $this->assertSame($downstream, $this->downstream->getValue($output));
+        $this->assertSame($downstream, $output->downstream);
         $this->assertFalse($output->isClosed());
     }
 
@@ -177,7 +164,7 @@ class PipedOutputStreamTest extends \PHPUnit_Framework_TestCase
         $output->connect($downstream);
         $output->connect($downstream, true);
 
-        $this->assertSame($downstream, $this->downstream->getValue($output));
+        $this->assertSame($downstream, $output->downstream);
         $this->assertFalse($output->isClosed());
     }
 
@@ -247,7 +234,7 @@ class PipedOutputStreamTest extends \PHPUnit_Framework_TestCase
      * A listener is listening at write.receive before event, so if the listener
      * is triggered, we know the receive() method of the downstream is called.
      */
-    public function testWrite()
+    public function testOutput()
     {
         // Initializes a piped input stream.
         $buffer = new \Threaded();
@@ -276,7 +263,7 @@ class PipedOutputStreamTest extends \PHPUnit_Framework_TestCase
 
         // Writes '*' to the piped output stream.
         $data = '*';
-        $output->write($data);
+        $output->output($data);
 
         // Asserts the receive() method of the piped input stream has been
         // called.
@@ -299,7 +286,7 @@ class PipedOutputStreamTest extends \PHPUnit_Framework_TestCase
      * Finally, check the 'waiting' status again to confirm the producer thread
      * has completed its job.
      */
-    public function testWriteWhenBufferIsFull()
+    public function testOutputWhenBufferIsFull()
     {
         // Initializes buffer and fills it up with '*'.
         $buffer = new \Threaded();
@@ -343,11 +330,11 @@ class PipedOutputStreamTest extends \PHPUnit_Framework_TestCase
      * @expectedException ZerusTech\Component\IO\Exception\IOException
      * @expectedExceptionMessage Can't write to a closed stream.
      */
-    public function testWriteOnClosedStream()
+    public function testOutputOnClosedStream()
     {
         $output = new PipedOutputStream();
         $output->close();
-        $output->write('hello');
+        $output->output('hello');
     }
 
     /**
@@ -357,9 +344,79 @@ class PipedOutputStreamTest extends \PHPUnit_Framework_TestCase
      * @expectedException ZerusTech\Component\IO\Exception\IOException
      * @expectedExceptionMessage Current stream is not connected to any downstream.
      */
-    public function testWriteWithNullDownstream()
+    public function testOutputWithNullDownstream()
     {
         $output = new PipedOutputStream();
-        $output->write('hello');
+        $output->output('hello');
     }
+
+    public function testWrite()
+    {
+        $buffer = new \Threaded();
+        $input = new PipedInputStream($buffer);
+        $output = new PipedOutputStream($input);
+        $output->write('hello');
+        $this->assertEquals(str_split('hello', 1), array_values((array)$buffer));
+    }
+
+    /**
+     * @dataProvider getDataForTestWriteSubstring
+     */
+    public function testWriteSubstring($sourceBytes, $offset, $length, $actualBytes)
+    {
+        $buffer = new \Threaded();
+        $input = new PipedInputStream($buffer);
+        $output = new PipedOutputStream($input);
+        $output->writeSubstring($sourceBytes, $offset, $length);
+        $this->assertEquals(str_split($actualBytes, 1), array_values((array)$buffer));
+    }
+
+    public function getDataForTestWriteSubstring()
+    {
+        return [
+            ['hello', 0, 5, 'hello'],
+            ['hello', 2, 3, 'llo'],
+            ['hello', 2, 4, 'llo'],
+            ['hello', -1, 1, 'o'],
+            ['hello', -3, 3, 'llo'],
+            ['hello', -3, 4, 'llo'],
+            ['hello', -5, 5, 'hello'],
+            ['hello', -6, 5, 'hello'],
+            ['hello', 0, -1, 'hell'],
+            ['hello', 0, -3, 'he'],
+            ['hello', 1, -1, 'ell'],
+            ['hello', 1, -2, 'el'],
+        ];
+    }
+
+    /**
+     * @dataProvider getDataForTestWriteSubstringException
+     * @expectedException \OutOfBoundsException
+     * @expectedExceptionMessage Invalid offset or length.
+     */
+    public function testWriteSubstringException($sourceBytes, $offset, $length)
+    {
+        $buffer = new \Threaded();
+        $input = new PipedInputStream($buffer);
+        $output = new PipedOutputStream($input);
+        $output->writeSubstring($sourceBytes, $offset, $length);
+        // $this->assertEquals(str_split($actualBytes, 1), array_values((array)$buffer));
+    }
+
+    public function getDataForTestWriteSubstringException()
+    {
+        return [
+            ['hello', 5, 1],
+            ['hello', 0, 0],
+            ['hello', 0, false],
+            ['hello', 0, null],
+            ['hello', 0, -5],
+            ['hello', 1, -4],
+            ['hello', 1, -5],
+            ['hello', -1, 0],
+            ['hello', -2, -2],
+            ['hello', -3, -4],
+        ];
+    }
+
 }

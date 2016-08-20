@@ -41,7 +41,7 @@ class Consumer extends \Thread
     {
         for ($i = 0; $i < $this->length; $i++) {
 
-            $this->downstream->read();
+            $this->downstream->input($bytes, 1);
         }
     }
 }
