@@ -104,7 +104,7 @@ class PipedOutputStream extends AbstractOutputStream implements PipedOutputStrea
     /**
      * {@inheritdoc}
      */
-    public function write($string)
+    protected function output($string)
     {
         if (true === $this->closed) {
 
@@ -129,7 +129,7 @@ class PipedOutputStream extends AbstractOutputStream implements PipedOutputStrea
             }
         }
 
-        return $this;
+        return strlen($string);
     }
 
     /**
