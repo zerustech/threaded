@@ -64,4 +64,55 @@ abstract class AbstractOutputStream extends EventDispatcherContainer implements 
     {
         return $this->closed;
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function flush()
+    {
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function write($bytes)
+    {
+        return $this->writeSubstring($bytes, 0, strlen($bytes));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function writeSubstring($bytes, $offset, $length)
+    {
+        $offset = 0 > $offset ? max(0, strlen($bytes) + $offset) : $offset;
+
+        $length = 0 > $length ? max(0, strlen($bytes) - $offset + $length) : $length;
+
+        if ($offset >= strlen($bytes) || 0 === $length || null === $length || false === $length) {
+
+            throw new \OutOfBoundsException(sprintf("Invalid offset or length."));
+        }
+
+        if (true === $this->closed) {
+
+            throw new IOException(sprintf("Stream is already closed, can't be written."));
+        }
+
+        return $this->output(substr($bytes, $offset, $length));
+    }
+
+    /**
+     * This method writes all bytes in ``$bytes`` to the actual target of
+     * current stream. It is called by the ``writeSubstring()`` method.
+     *
+     * Subclasses of abstract output stream should override this method with the
+     * actual logic for the manupulation of the byte data.
+     *
+     * @param string $bytes The bytes to write to the stream.
+     * @return int The actual number of bytes written to the stream.
+     * @throws IOException If an I/O error occurs.
+     */
+    abstract protected function output($bytes);
 }

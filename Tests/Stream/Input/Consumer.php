@@ -39,9 +39,13 @@ class Consumer extends \Thread
      */
     public function run()
     {
+        $ref = new \ReflectionClass(get_class($this->downstream));
+        $input = $ref->getMethod('input');
+        $input->setAccessible(true);
+
         for ($i = 0; $i < $this->length; $i++) {
 
-            $this->downstream->read();
+            $input->invokeArgs($this->downstream, [&$bytes, 1]);
         }
     }
 }

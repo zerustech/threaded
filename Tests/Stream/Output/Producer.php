@@ -39,6 +39,10 @@ class Producer extends \Thread
      */
     public function run()
     {
-        $this->upstream->write($this->data);
+        $ref = new \ReflectionClass($this->upstream);
+        $output = $ref->getMethod('output');
+        $output->setAccessible(true);
+
+        $output->invoke($this->upstream, $this->data);
     }
 }
