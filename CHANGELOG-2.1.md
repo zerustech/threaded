@@ -7,6 +7,9 @@ This changelog references the relavant changes (bug and security fixes) done in
 To get the new features in this major release, check the list at the bottom of
 this file.
 
+* 2.1.2 (2016-08-21)
+    * Merged changes from v1.1.4 to support zerustech/io: 2.0.0
+
 * 2.1.1 (2016-08-11)
     * Moved source files to src
     * Update dev-master alias to dev-2.1
