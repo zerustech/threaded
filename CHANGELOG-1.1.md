@@ -7,7 +7,7 @@ This changelog references the relavant changes (bug and security fixes) done in
 To get the new features in this major release, check the list at the bottom of
 this file.
 
-* 1.1.4 (2016-08-20)
+* 1.1.4 (2016-08-21)
     * Re-implemented read() and write() methods
     * Added readSubstring() and writeSubstring() methods
     * Added input() and output() methods
