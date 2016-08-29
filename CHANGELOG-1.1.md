@@ -7,6 +7,9 @@ This changelog references the relavant changes (bug and security fixes) done in
 To get the new features in this major release, check the list at the bottom of
 this file.
 
+* 1.1.5 ()
+    * Changed zerustech/io version to ``>= 2.1.0-dev``
+
 * 1.1.4 (2016-08-21)
     * Re-implemented read() and write() methods
     * Added readSubstring() and writeSubstring() methods
