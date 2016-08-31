@@ -9,6 +9,8 @@ this file.
 
 * 1.1.5 ()
     * Changed zerustech/io version to ``>= 2.1.0-dev``
+    * Merged changes on abstract input stream from zerustech/io
+    * Merged chagnes on abstract output stream from zerustech/io
 
 * 1.1.4 (2016-08-21)
     * Re-implemented read() and write() methods
