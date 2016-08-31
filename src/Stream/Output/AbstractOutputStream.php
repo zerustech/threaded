@@ -55,6 +55,8 @@ abstract class AbstractOutputStream extends EventDispatcherContainer implements 
         }
 
         $this->closed = true;
+
+        return $this;
     }
 
     /**
@@ -90,7 +92,7 @@ abstract class AbstractOutputStream extends EventDispatcherContainer implements 
 
         $length = 0 > $length ? max(0, strlen($bytes) - $offset + $length) : $length;
 
-        if ($offset >= strlen($bytes) || 0 === $length || null === $length || false === $length) {
+        if (strlen($bytes) > 0 && $offset >= strlen($bytes) || null === $length || false === $length) {
 
             throw new \OutOfBoundsException(sprintf("Invalid offset or length."));
         }
@@ -100,7 +102,7 @@ abstract class AbstractOutputStream extends EventDispatcherContainer implements 
             throw new IOException(sprintf("Stream is already closed, can't be written."));
         }
 
-        return $this->output(substr($bytes, $offset, $length));
+        return $this->output(substr($bytes, $offset, $length).'');
     }
 
     /**
