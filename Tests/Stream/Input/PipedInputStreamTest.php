@@ -33,7 +33,6 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
 
         $this->assertSame($upstream, $input->upstream);
         $this->assertFalse($input->closed);
-        $this->assertEquals(0, $input->getPosition());
     }
 
     public function testConstructorWithNullUpstream()
@@ -281,33 +280,6 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($input->isRunning());
     }
 
-    /**
-     * @expectedException ZerusTech\Component\IO\Exception\IOException
-     * @expectedExceptionMessage mark/reset not supported.
-     */
-    public function testDummyMethods()
-    {
-        $buffer = new \Threaded();
-        $upstream = new PipedOutputStream();
-        $input = new PipedInputStream($buffer, $upstream);
-
-        $this->assertEquals(0, $input->available());
-        $this->assertSame($input, $input->mark(100));
-        $this->assertFalse($input->markSupported());
-
-        $input->buffer[] = '*';
-        $input->buffer[] = '*';
-        $input->buffer[] = '*';
-        $input->buffer[] = '*';
-        $input->buffer[] = '*';
-
-        $this->assertEquals(5, $input->skip(5));
-        $this->assertFalse($input->isClosed());
-        $input->close();
-        $this->assertTrue($input->isClosed());
-        $input->reset();
-    }
-
     public function testReadAndReadSubstring()
     {
         $buffer = new \Threaded();
@@ -330,6 +302,50 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @dataProvider getDataForTestReadSubstring
+     */
+    public function testReadSubstring($source, $offset, $length, $data, $count, $result)
+    {
+        $buffer = new \Threaded();
+
+        foreach (str_split($data) as $byte) {
+
+            $buffer[] = $byte;
+        }
+
+        $input = new PipedInputStream($buffer);
+
+        $this->assertEquals($count, $input->readSubstring($source, $offset, $length));
+
+        $this->assertEquals($result, $source);
+    }
+
+    public function getDataForTestReadSubstring()
+    {
+        return [
+            ['*****', 0, 5, 'hello', 5, 'hello'],
+            ['*****', 1, 5, 'hello', 5, '*hello'],
+            ['*****', 5, 5, 'hello', 5, '*****hello'],
+            ['*****', -1, 5, 'hello', 5, '****hello'],
+            ['*****', -5, 5, 'hello', 5, 'hello'],
+            ['*****', -6, 5, 'hello', 5, 'hello'],
+            ['', 0, 5, 'hello', 5, 'hello'],
+            ['', -1, 5, 'hello', 5, 'hello'],
+            ['*****', 0, 1, 'hello', 1, 'h'],
+            ['*****', 0, -1, 'hello', 4, 'hell'],
+            ['*****', 0, -4, 'hello', 1, 'h'],
+            ['*****', 1, 1, 'hello', 1, '*h'],
+            ['*****', 1, -1, 'hello', 3, '*hel'],
+            ['*****', 1, -3, 'hello', 1, '*h'],
+            ['*****', 0, 1, '', -1, ''],
+            //['*****', 0, 2, '', -1, ''],
+            //['*****', 0, 6, 'hello', 5, 'hello'],
+            //['*****', 1, 6, 'hello', 5, '*hello'],
+        ];
+    }
+
+
+    /**
      * @dataProvider getDataForTestReadSubstringException
      * @expectedException \OutOfBoundsException
      * @expectedExceptionMessage Invalid offset or length.
@@ -345,11 +361,40 @@ class PipedInputStreamTest extends \PHPUnit_Framework_TestCase
     {
         return [
             ['*****', 6, 5],
+            ['', 1, 5],
+            ['*****', 0, 0],
+            ['*****', 0, null],
+            ['*****', 0, false],
             ['*****', 0, -5],
             ['*****', 0, -6],
-            ['*****', 1, 0],
-            ['*****', 2, null],
-            ['*****', 2, false],
+            ['', 0, -1],
         ];
+    }
+
+    /**
+     * @expectedException ZerusTech\Component\IO\Exception\IOException
+     * @expectedExceptionMessage mark/reset not supported.
+     */
+    public function testMiscMethods()
+    {
+        $buffer = new \Threaded();
+        $upstream = new PipedOutputStream();
+        $input = new PipedInputStream($buffer, $upstream);
+
+        $this->assertEquals(0, $input->available());
+        $this->assertSame($input, $input->mark(100));
+        $this->assertFalse($input->markSupported());
+
+        $input->buffer[] = '*';
+        $input->buffer[] = '*';
+        $input->buffer[] = '*';
+        $input->buffer[] = '*';
+        $input->buffer[] = '*';
+
+        $this->assertEquals(5, $input->skip(5));
+        $this->assertFalse($input->isClosed());
+        $input->close();
+        $this->assertTrue($input->isClosed());
+        $input->reset();
     }
 }
