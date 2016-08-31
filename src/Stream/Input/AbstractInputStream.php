@@ -35,18 +35,11 @@ abstract class AbstractInputStream extends EventDispatcherContainer implements I
     protected $closed;
 
     /**
-     * @var int The index of the next byte that will be read from the stream.
-     */
-    protected $position;
-
-    /**
      * Create a new input stream instance.
      */
     public function __construct()
     {
         $this->closed = false;
-
-        $this->position = 0;
     }
 
     /**
@@ -76,8 +69,6 @@ abstract class AbstractInputStream extends EventDispatcherContainer implements I
             throw new IOException(sprintf("Stream is already closed, can't be read."));
         }
 
-        $data = '';
-
         $count = $this->input($data, $length);
 
         $bytes = substr($bytes, 0, $offset).$data;
@@ -96,7 +87,7 @@ abstract class AbstractInputStream extends EventDispatcherContainer implements I
     /**
      * {@inheritdoc}
      */
-    public function mark($readLimit)
+    public function mark($limit)
     {
         return $this;
     }
@@ -118,21 +109,15 @@ abstract class AbstractInputStream extends EventDispatcherContainer implements I
     }
 
     /**
-     * This method skips the specified number of bytes in the stream. It retruns
-     * the actual number of bytes skipped, which may be less than the requred
-     * amount.
-     *
-     * @param int $byteCount The requested number of bytes to skip.
-     * @return int The actual number of bytes skipped.
-     * @throws IOException If an error occurs.
+     * {@inheritdoc}
      */
-    public function skip($length)
+    public function skip($length, $buffer = 1024)
     {
         $remaining = $length;
 
-        $bufferSize = min(2048, $length);
-
         while ($remaining > 0) {
+
+            $bufferSize = min($buffer, $length, $remaining);
 
             $numberOfBytes = $this->input($bytes, $bufferSize);
 
@@ -148,7 +133,7 @@ abstract class AbstractInputStream extends EventDispatcherContainer implements I
     }
 
     /**
-     * Closes current stream.
+     * {@inheritdoc}
      */
     public function close()
     {
@@ -159,15 +144,11 @@ abstract class AbstractInputStream extends EventDispatcherContainer implements I
 
         $this->closed = true;
 
-        $this->position = 0;
-
         return $this;
     }
 
     /**
-     * Checks whether current stream is closed or not.
-     *
-     * @return bool True if current stream is closed, and false otherwise.
+     * {@inheritdoc}
      */
     public function isClosed()
     {
@@ -175,20 +156,15 @@ abstract class AbstractInputStream extends EventDispatcherContainer implements I
     }
 
     /**
-     * Returns the index of the next byte in current stream.
-     *
-     * @return int The index of the next byte.
-     */
-    public function getPosition()
-    {
-        return $this->position;
-    }
-
-    /**
      * This method reads ``$length`` bytes from the actual source of current
      * stream and stores the bytes read into the caller supplied buffer. The
      * actual number of bytes read is returned as an int. A -1 is returned to
      * indicate the end of the stream.
+     *
+     * NOTE: The actual number of bytes read does not always equal to the length
+     * of ``$bytes``. For example, sometimes, a few bytes will be dropped from
+     * the result, so the number of bytes read is greater than the length of
+     * ``$bytes``.
      *
      * Subclasses of abstract input stream should override this method with the
      * actual logic for manuplulating the byte data.

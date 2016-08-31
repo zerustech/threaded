@@ -365,6 +365,16 @@ class PipedOutputStreamTest extends \PHPUnit_Framework_TestCase
             ['hello', 0, -3, 'he'],
             ['hello', 1, -1, 'ell'],
             ['hello', 1, -2, 'el'],
+            ['hello', 1, -2, 'el'],
+            ['', 0, 0, ''],
+            ['', 0, 3, ''],
+            ['hello', 0, 0, ''],
+            ['hello', 0, -5, ''],
+            ['hello', 1, -4, ''],
+            ['hello', 1, -5, ''],
+            ['hello', -1, 0, ''],
+            ['hello', -2, -2, ''],
+            ['hello', -3, -4, ''],
         ];
     }
 
@@ -384,15 +394,8 @@ class PipedOutputStreamTest extends \PHPUnit_Framework_TestCase
     {
         return [
             ['hello', 5, 1],
-            ['hello', 0, 0],
             ['hello', 0, false],
             ['hello', 0, null],
-            ['hello', 0, -5],
-            ['hello', 1, -4],
-            ['hello', 1, -5],
-            ['hello', -1, 0],
-            ['hello', -2, -2],
-            ['hello', -3, -4],
         ];
     }
 }

@@ -9,6 +9,8 @@ this file.
 
 * 2.1.3 ()
     * Changed zerustech/io version to ``>= 2.1.0-dev``
+    * Merged changes on abstract input stream from 1.1
+    * Merged chagnes on abstract output stream from 1.1
 
 * 2.1.2 (2016-08-21)
     * Merged changes from v1.1.4 to support zerustech/io: 2.0.0
